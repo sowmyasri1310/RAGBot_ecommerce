@@ -71,6 +71,21 @@ export class QueryRouter {
     session.lastIntent = intent;
 
     switch (intent) {
+      case 'GREETING': {
+        const answer = "Hi! I'm your product assistant. You can ask me about products, prices, specs, warranties, or shipping policies.";
+        
+        logDiagnostics(intent, 0, 'None', 'None', 'None');
+
+        return {
+          handled: true,
+          answer,
+          sourcesUsed: [],
+          confidenceScore: 1.0,
+          confidenceExplanation: 'Static greeting response.',
+          resolvedProduct: 'None'
+        };
+      }
+
       case 'PRODUCT_CATALOG': {
         const uniqueNames = Array.from(new Set(allNames)).sort((a, b) => a.localeCompare(b));
         const answer = `Available Products:\n\n${uniqueNames.map(name => `* ${name}`).join('\n')}`;
@@ -201,7 +216,13 @@ export class QueryRouter {
       }
 
       case 'PRODUCT_FILTER': {
-        const { filtered, activeCategory } = MetadataService.filterProducts(query, session.lastFilterCategory, session.lastIntent);
+        const extractedCategory = MetadataService.extractCategory(query);
+        const { filtered, activeCategory } = MetadataService.filterProducts(
+          query,
+          session.lastFilterCategory || extractedCategory,
+          session.lastIntent,
+          extractedCategory
+        );
         session.lastFilterCategory = activeCategory;
 
         const table = MetadataService.formatAsMarkdownTable(filtered);

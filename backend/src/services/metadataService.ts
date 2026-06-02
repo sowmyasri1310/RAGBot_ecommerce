@@ -48,10 +48,23 @@ export class MetadataService {
     });
   }
 
+  public static extractCategory(query: string): string | undefined {
+    const q = query.toLowerCase();
+    if (/\b(laptop|laptops)\b/i.test(q)) return 'laptop';
+    if (/\b(monitor|monitors|screen|screens)\b/i.test(q)) return 'monitor';
+    if (/\b(headphone|headphones|earbud|earbuds|audio|sound|music)\b/i.test(q)) return 'audio';
+    if (/\b(keyboard|keyboards|mouse|mice|accessory|accessories)\b/i.test(q)) return 'accessories';
+    if (/\b(watch|watches|wearable|wearables)\b/i.test(q)) return 'smartwatches';
+    if (/\b(power bank|powerbank|powerbanks|charger|chargers|charging)\b/i.test(q)) return 'portable charging';
+    if (/\b(camera|cameras)\b/i.test(q)) return 'camera';
+    return undefined;
+  }
+
   public static filterProducts(
     query: string,
     lastCategory?: string | null,
-    lastIntent?: string | null
+    lastIntent?: string | null,
+    explicitCategory?: string | null
   ): { filtered: ProductMetadata[], activeCategory: string | null } {
     const products = this.getAllProducts();
     const qLower = query.toLowerCase();
@@ -60,33 +73,15 @@ export class MetadataService {
 
     // 1. Category filter
     let categoryMatched = false;
-    if (qLower.includes('laptop')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('laptop'));
-      activeCategory = 'laptop';
-      categoryMatched = true;
-    } else if (qLower.includes('monitor') || qLower.includes('screen')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('monitor'));
-      activeCategory = 'monitor';
-      categoryMatched = true;
-    } else if (qLower.includes('headphone') || qLower.includes('earbud') || qLower.includes('audio')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('audio'));
-      activeCategory = 'audio';
-      categoryMatched = true;
-    } else if (qLower.includes('keyboard') || qLower.includes('mouse') || qLower.includes('accessories') || qLower.includes('accessory')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('accessories'));
-      activeCategory = 'accessories';
-      categoryMatched = true;
-    } else if (qLower.includes('watch') || qLower.includes('wearable')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('smartwatches'));
-      activeCategory = 'smartwatches';
-      categoryMatched = true;
-    } else if (qLower.includes('power bank') || qLower.includes('powerbank') || qLower.includes('charger')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('portable charging'));
-      activeCategory = 'portable charging';
-      categoryMatched = true;
-    } else if (qLower.includes('camera')) {
-      filtered = filtered.filter(p => p.category.toLowerCase().includes('camera'));
-      activeCategory = 'camera';
+    let targetCategory = explicitCategory || null;
+
+    if (!targetCategory) {
+      targetCategory = this.extractCategory(query) || null;
+    }
+
+    if (targetCategory) {
+      filtered = filtered.filter(p => p.category.toLowerCase() === targetCategory!.toLowerCase() || p.category.toLowerCase().includes(targetCategory!.toLowerCase()));
+      activeCategory = targetCategory;
       categoryMatched = true;
     }
 

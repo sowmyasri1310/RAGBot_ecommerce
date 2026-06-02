@@ -3,6 +3,7 @@ import { SessionService } from '../../services/session.service';
 import { logger } from '../../utils/logger';
 
 export type IntentType =
+  | 'GREETING'
   | 'PRODUCT_CATALOG'
   | 'PRODUCT_PRICE_LIST'
   | 'PRODUCT_CHEAPEST'
@@ -16,6 +17,45 @@ export class IntentDetector {
   public static async detect(query: string, sessionId: string): Promise<IntentType> {
     const q = query.toLowerCase().trim().replace(/[?.]/g, '');
     logger.info(`[IntentDetector] Detecting intent for: "${query}" in session "${sessionId}"`);
+
+    // BUG 3 — Greetings return "I don't have that information"
+    const greetingKeywords = /^\s*(hi|hello|hey|greetings|good morning|good afternoon|good evening|yo)\b/i;
+    if (greetingKeywords.test(q)) {
+      logger.info(`[IntentDetector] Greeting detected. Routing to GREETING`);
+      return 'GREETING';
+    }
+
+    // BUG 2 — Multi-product comparison or comparison keywords
+    const comparisonKeywords = /\b(compare|vs|versus|difference between|differences between)\b/i;
+    const productMatchers = [
+      /\b(dell|xps)\b/i,
+      /\b(hp|spectre)\b/i,
+      /\b(lenovo|thinkpad|x1 carbon)\b/i,
+      /\b(macbook|apple macbook)\b/i,
+      /\b(asus|zephyrus|rog zephyrus)\b/i,
+      /\b(acer|predator|helios)\b/i,
+      /\b(samsung|odyssey|neo g9)\b/i,
+      /\b(sony|wh-1000xm5|wh1000xm5)\b/i,
+      /\b(logitech|mx keys)\b/i,
+      /\b(watch ultra|apple watch)\b/i,
+      /\b(bose|quietcomfort)\b/i,
+      /\b(keychron|q1 pro)\b/i,
+      /\b(razer|deathadder)\b/i,
+      /\b(anker|power bank|powerbank)\b/i,
+      /\b(dji|osmo|pocket 3)\b/i
+    ];
+    
+    let matchedProductsCount = 0;
+    for (const matcher of productMatchers) {
+      if (matcher.test(q)) {
+        matchedProductsCount++;
+      }
+    }
+
+    if (comparisonKeywords.test(q) || matchedProductsCount >= 2) {
+      logger.info(`[IntentDetector] Comparison keyword or 2+ products detected (${matchedProductsCount}). Routing to NORMAL_RAG.`);
+      return 'NORMAL_RAG';
+    }
 
     // Define keywords
     const catalogKeywords = /\b(what products are available|what's available|list all products|show all products|what products do you have|display product catalog|display catalog|available items|list products|available products|what all products|show available products|products do you have|products are in the catalog|list of products|show products)\b/i;
@@ -39,6 +79,9 @@ export class IntentDetector {
     ];
     
     const mentionsSpecificProduct = productNames.some(pName => q.includes(pName));
+    const hasCategory = categoryKeywords.test(q);
+    const hasFilter = filterKeywords.test(q);
+    const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q) || /\b\d+\s*hour\b/i.test(q);
 
     // Handle follow-up correction context (Gap 2)
     const isCorrection = /^(but\s+that|no\s+that|that\s+is\s+not|actually|instead|sorry|no\b)/i.test(q);
@@ -52,7 +95,7 @@ export class IntentDetector {
     }
 
     // 1. PRODUCT_CATALOG
-    if (catalogKeywords.test(q) || q === 'products' || q === 'catalog') {
+    if ((catalogKeywords.test(q) || q === 'products' || q === 'catalog') && !hasCategory) {
       return 'PRODUCT_CATALOG';
     }
 
@@ -63,9 +106,6 @@ export class IntentDetector {
 
     // 3. PRODUCT_PRICE_SINGLE (specific product name AND price/cost keywords)
     if (mentionsSpecificProduct && priceKeywords.test(q)) {
-      const hasCategory = categoryKeywords.test(q);
-      const hasFilter = filterKeywords.test(q);
-      const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q);
       if (!(hasCategory && (cheapestKeywords.test(q) || hasPriceLimit))) {
         return 'PRODUCT_PRICE_SINGLE';
       }
@@ -76,13 +116,9 @@ export class IntentDetector {
       return 'PRODUCT_DETAIL';
     }
 
-    // 5. PRODUCT_FILTER (Category / specs / price limit / constraints)
-    const hasCategory = categoryKeywords.test(q);
-    const hasFilter = filterKeywords.test(q);
-    const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q) || /\b\d+\s*hour\b/i.test(q);
-
+    // 5. PRODUCT_FILTER (Category / specs / price limit / constraints) (BUG 1)
     if (hasCategory || hasFilter || hasPriceLimit || mentionsSpecificProduct) {
-      if (cheapestKeywords.test(q) || costliestKeywords.test(q) || priceLimitKeywords.test(q) || hasFilter) {
+      if (cheapestKeywords.test(q) || costliestKeywords.test(q) || priceLimitKeywords.test(q) || hasFilter || hasCategory) {
         return 'PRODUCT_FILTER';
       }
     }
@@ -102,6 +138,7 @@ export class IntentDetector {
       logger.info('[IntentDetector] Falling back to LLM intent classification...');
       const systemPrompt = `You are a query classifier for an e-commerce assistant.
 Classify the user's query into exactly one of the following intents:
+- GREETING (e.g. hi, hello, hey, good morning)
 - PRODUCT_CATALOG (e.g. show product list, what products are available)
 - PRODUCT_PRICE_LIST (e.g. show prices of all items)
 - PRODUCT_CHEAPEST (e.g. lowest price item overall)
@@ -119,6 +156,7 @@ Return ONLY the intent name. No other text, no explanation.`;
 
       const detected = response.trim().toUpperCase() as IntentType;
       const validIntents: IntentType[] = [
+        'GREETING',
         'PRODUCT_CATALOG',
         'PRODUCT_PRICE_LIST',
         'PRODUCT_CHEAPEST',
@@ -131,6 +169,9 @@ Return ONLY the intent name. No other text, no explanation.`;
 
       if (validIntents.includes(detected)) {
         logger.info(`[IntentDetector] LLM classified intent as: ${detected}`);
+        if (detected === 'PRODUCT_CATALOG' && categoryKeywords.test(q)) {
+          return 'PRODUCT_FILTER';
+        }
         return detected;
       }
     } catch (err) {
