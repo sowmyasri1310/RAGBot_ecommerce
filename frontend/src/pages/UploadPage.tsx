@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CloudUpload, Play, Terminal, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -39,7 +40,7 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append('file', file);
       
-      const uploadRes = await fetch('/api/upload', {
+      const uploadRes = await fetch(`${API_BASE_URL}/api/upload`, {
         method: 'POST',
         body: formData
       });
@@ -57,7 +58,7 @@ export default function UploadPage() {
 
       // Step 2: Trigger Ingest pipeline
       setProgress(60);
-      const ingestRes = await fetch('/api/ingest', {
+      const ingestRes = await fetch(`${API_BASE_URL}/api/ingest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,7 +103,7 @@ export default function UploadPage() {
       addLog('Processing 52 product descriptions, manuals, FAQs, warranties, and return/shipping policies...');
       addLog('Generating local vectors (Xenova/all-MiniLM-L6-v2) for all chunks. Please wait (takes ~15-30s)...');
 
-      const res = await fetch('/api/documents/ingest-sample', { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/api/documents/ingest-sample`, { method: 'POST' });
       
       if (!res.ok) {
         const errData = await res.json();

@@ -5,6 +5,7 @@ import UploadPage from './pages/UploadPage';
 import ChatPage from './pages/ChatPage';
 import EvaluationPage from './pages/EvaluationPage';
 import FeedbackPage from './pages/FeedbackPage';
+import { API_BASE_URL } from './config';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'chat' | 'evaluation' | 'feedback'>('chat');
@@ -14,7 +15,7 @@ export default function App() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch('/health');
+        const res = await fetch(`${API_BASE_URL}/health`);
         if (res.ok) {
           const data = await res.json();
           setServerStatus('ONLINE');

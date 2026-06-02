@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Database, FolderHeart, FileSpreadsheet, Layers, Trash2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface DocumentRecord {
   id: string;
@@ -26,7 +27,7 @@ export default function Dashboard() {
   const fetchDocuments = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/documents');
+      const res = await fetch(`${API_BASE_URL}/api/documents`);
       if (res.ok) {
         const data = await res.json();
         const docs: DocumentRecord[] = data.documents || [];
@@ -60,7 +61,7 @@ export default function Dashboard() {
     }
     
     try {
-      const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}`, { method: 'DELETE' });
       if (res.ok) {
         alert('Document deleted successfully.');
         fetchDocuments();

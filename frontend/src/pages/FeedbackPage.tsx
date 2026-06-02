@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Tag } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface FeedbackItem {
   id: string;
@@ -27,7 +28,7 @@ export default function FeedbackPage() {
 
   const fetchAllFeedback = async () => {
     try {
-      const res = await fetch('/api/feedback');
+      const res = await fetch(`${API_BASE_URL}/api/feedback`);
       if (res.ok) {
         const data = await res.json();
         setFeedbacks(data.feedbacks || []);
@@ -52,7 +53,7 @@ export default function FeedbackPage() {
     try {
       setLoading(true);
       // We pass query and searchMode structure
-      const res = await fetch('/api/feedback/search', {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery.trim(), mode: searchMode })
@@ -91,7 +92,7 @@ export default function FeedbackPage() {
 
     try {
       setFormLoading(true);
-      const res = await fetch('/api/feedback/add', {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,7 +121,7 @@ export default function FeedbackPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/feedback/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${id}`, { method: 'DELETE' });
       if (res.ok) {
         fetchAllFeedback();
         if (searchResults) {

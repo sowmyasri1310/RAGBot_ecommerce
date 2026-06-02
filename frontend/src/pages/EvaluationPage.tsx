@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BarChart3, LineChart, FileText, RefreshCw, Trash2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface MetricAverages {
   precision: number;
@@ -50,7 +51,7 @@ export default function EvaluationPage() {
   const fetchMetrics = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/metrics');
+      const res = await fetch(`${API_BASE_URL}/api/metrics`);
       if (res.ok) {
         const data = await res.json();
         setAverages(data.averages || {});
@@ -73,7 +74,7 @@ export default function EvaluationPage() {
       return;
     }
     try {
-      const res = await fetch('/api/metrics/reset', { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/metrics/reset`, { method: 'DELETE' });
       if (res.ok) {
         alert('Evaluation metrics reset successfully.');
         fetchMetrics();

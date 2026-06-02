@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Eye, Network, RefreshCw, ShieldCheck, Copy, Check } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 interface Source {
   id: string;
@@ -58,7 +59,7 @@ export default function ChatPage() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/api/chat/history');
+      const res = await fetch(`${API_BASE_URL}/api/chat/history`);
       if (res.ok) {
         const data = await res.json();
         setSessionsList(data.history || []);
@@ -90,7 +91,7 @@ export default function ChatPage() {
   const loadSession = async (sessionId: string) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/chat/history/${sessionId}`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/history/${sessionId}`);
       if (!res.ok) throw new Error('Failed to load chat history');
       
       const data = await res.json();
@@ -130,7 +131,7 @@ export default function ChatPage() {
     if (!window.confirm('Are you sure you want to delete this conversation?')) return;
     
     try {
-      const res = await fetch(`/api/chat/history/${sessionId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/chat/history/${sessionId}`, { method: 'DELETE' });
       if (res.ok) {
         if (activeSessionId === sessionId) {
           handleNewChat();
@@ -146,7 +147,7 @@ export default function ChatPage() {
     if (!window.confirm('Are you sure you want to delete ALL previous conversations? This action cannot be undone.')) return;
     
     try {
-      const res = await fetch('/api/chat/history', { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/chat/history`, { method: 'DELETE' });
       if (res.ok) {
         handleNewChat();
         fetchHistory();
@@ -192,7 +193,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
