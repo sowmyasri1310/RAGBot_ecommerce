@@ -83,14 +83,10 @@ Total Products: ${products.length}`;
     } else {
       switch (classification) {
         case 'PRODUCT_DETAIL':
-        case 'RAM_FILTER':
-        case 'GPU_FILTER':
-        case 'DISPLAY_FILTER':
-        case 'BATTERY_FILTER':
-        case 'PRICE_QUERY':
-        case 'PRICE_COMPARISON':
-        case 'CHEAPEST_PRODUCT':
-        case 'MOST_EXPENSIVE_PRODUCT':
+        case 'PRODUCT_CHEAPEST':
+        case 'PRODUCT_MOST_EXPENSIVE':
+        case 'PRODUCT_PRICE_LIST':
+        case 'PRODUCT_FILTER':
           targetCollections = ['product_descriptions', 'manuals'];
           topK = 25;
           break;

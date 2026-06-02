@@ -180,6 +180,11 @@ router.delete('/documents/:id', async (req: Request, res: Response, next: NextFu
 
     // 2. Delete metadata from JSON DB
     DBService.deleteDocument(docId);
+    
+    // 3. Sync deletion with separate metadata index
+    if (doc.category === 'product_descriptions') {
+      DBService.deleteProductByFile(doc.filename);
+    }
 
     logger.info(`Successfully deleted document '${doc.filename}' (ID: ${docId})`);
     
@@ -208,6 +213,7 @@ router.delete('/documents', async (req: Request, res: Response, next: NextFuncti
     for (const doc of documents) {
       DBService.deleteDocument(doc.id);
     }
+    DBService.clearProducts();
     
     logger.info('Successfully cleared all documents and ChromaDB collection.');
     return res.status(200).json({

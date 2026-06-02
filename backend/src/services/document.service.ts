@@ -119,6 +119,22 @@ export class DocumentService {
       };
 
       DBService.addDocument(docRecord);
+
+      if (collectionName === 'product_descriptions') {
+        DBService.addProduct({
+          product_name: productMetadata.product_name || cleanProductName,
+          category: productMetadata.category || 'Other',
+          price: productMetadata.price || 0,
+          offer_price: productMetadata.offer_price || 0,
+          warranty: productMetadata.warranty || 'None',
+          ram: productMetadata.ram || 'None',
+          storage: productMetadata.storage || 'None',
+          gpu: productMetadata.gpu || 'None',
+          display: productMetadata.display || 'None',
+          battery: productMetadata.battery || 'None',
+          source_file: originalName
+        });
+      }
       logger.info(`Successfully ingested '${originalName}'. Registered ID: ${documentId} with ${chunks.length} chunks.`);
       return docRecord;
     } catch (error) {

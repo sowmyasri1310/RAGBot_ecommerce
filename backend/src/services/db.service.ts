@@ -58,11 +58,26 @@ export interface ChatSessionRecord {
   messages: ChatMessageRecord[];
 }
 
+export interface ProductMetadata {
+  product_name: string;
+  category: string;
+  price: number;
+  offer_price: number;
+  warranty: string;
+  ram: string;
+  storage: string;
+  gpu: string;
+  display: string;
+  battery: string;
+  source_file: string;
+}
+
 interface Schema {
   feedbacks: FeedbackRecord[];
   evaluations: EvaluationRecord[];
   documents: DocumentRecord[];
   chatSessions: ChatSessionRecord[];
+  products: ProductMetadata[];
 }
 
 export class DBService {
@@ -71,7 +86,8 @@ export class DBService {
     feedbacks: [],
     evaluations: [],
     documents: [],
-    chatSessions: []
+    chatSessions: [],
+    products: []
   };
 
   /**
@@ -94,8 +110,18 @@ export class DBService {
         this.data.evaluations = this.data.evaluations || [];
         this.data.documents = this.data.documents || [];
         this.data.chatSessions = this.data.chatSessions || [];
+        this.data.products = this.data.products || [];
       } else {
         logger.info(`Database not found. Creating a new one at: ${this.dbPath}`);
+        this.data.products = [];
+        this.save();
+      }
+
+      // Populate metadata index with standard 15 products if empty
+      if (!this.data.products || this.data.products.length === 0) {
+        logger.info('Pre-populating Product Metadata Index with standard 15 products.');
+        const { MetadataFilterService } = require('./metadataFilter.service');
+        this.data.products = MetadataFilterService.getStandardProductSpecifications();
         this.save();
       }
     } catch (error) {
@@ -206,6 +232,31 @@ export class DBService {
 
   public static clearAllChatSessions(): void {
     this.data.chatSessions = [];
+    this.save();
+  }
+
+  // ==========================================
+  // PRODUCT METADATA OPERATIONS
+  // ==========================================
+  public static getProducts(): ProductMetadata[] {
+    return this.data.products || [];
+  }
+
+  public static addProduct(product: ProductMetadata): void {
+    this.data.products = this.data.products || [];
+    this.data.products = this.data.products.filter(p => p.product_name.toLowerCase() !== product.product_name.toLowerCase());
+    this.data.products.push(product);
+    this.save();
+  }
+
+  public static deleteProductByFile(filename: string): void {
+    this.data.products = this.data.products || [];
+    this.data.products = this.data.products.filter(p => p.source_file !== filename);
+    this.save();
+  }
+
+  public static clearProducts(): void {
+    this.data.products = [];
     this.save();
   }
 }

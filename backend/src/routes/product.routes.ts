@@ -21,7 +21,7 @@ router.get('/products/search', (req: Request, res: Response, next: NextFunction)
       p.product_name.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q) ||
       (p.gpu && p.gpu.toLowerCase().includes(q)) ||
-      (p.display_type && p.display_type.toLowerCase().includes(q))
+      (p.display && p.display.toLowerCase().includes(q))
     );
 
     logger.info(`Product Search for "${q}" returned ${filtered.length} matches.`);
@@ -56,13 +56,16 @@ router.get('/products/filter', (req: Request, res: Response, next: NextFunction)
       products = products.filter(p => p.price <= maxPrice);
     }
     if (ram !== undefined) {
-      products = products.filter(p => p.ram_gb !== undefined && p.ram_gb >= ram);
+      products = products.filter(p => {
+        const parsedRam = parseInt(p.ram.replace(/[^0-9]/g, ''), 10);
+        return !isNaN(parsedRam) && parsedRam >= ram;
+      });
     }
     if (gpu) {
       products = products.filter(p => p.gpu !== undefined && p.gpu.toLowerCase().includes(gpu.toLowerCase()));
     }
     if (display) {
-      products = products.filter(p => p.display_type !== undefined && p.display_type.toLowerCase().includes(display.toLowerCase()));
+      products = products.filter(p => p.display !== undefined && p.display.toLowerCase().includes(display.toLowerCase()));
     }
 
     return res.status(200).json({ success: true, count: products.length, products });

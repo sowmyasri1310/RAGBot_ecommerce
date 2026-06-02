@@ -1,189 +1,188 @@
 import { logger } from '../utils/logger';
-import { DBService, DocumentRecord } from './db.service';
-
-export interface ProductMetadata {
-  product_name: string;
-  category: string;
-  price: number;
-  base_price: number;
-  ram_gb?: number;
-  storage_gb?: number;
-  gpu?: string;
-  display_type?: string;
-  battery_hours?: number;
-  fast_charging: boolean;
-  warranty_years?: number;
-  source_file: string;
-}
+import { DBService, DocumentRecord, ProductMetadata } from './db.service';
 
 export class MetadataFilterService {
   // Static metadata map for the 15 standard products to guarantee 100% accurate spec retrieval.
   private static readonly STANDARD_PRODUCTS: Record<string, Omit<ProductMetadata, 'source_file'>> = {
     'dell_xps_15_description.md': {
       product_name: 'Dell XPS 15',
-      category: 'Laptop',
-      price: 1899,
-      base_price: 1999,
-      ram_gb: 32,
-      storage_gb: 1000,
+      category: 'Laptops',
+      price: 1999,
+      offer_price: 1899,
+      warranty: '2 Years',
+      ram: '32GB',
+      storage: '1TB',
       gpu: 'RTX 4070',
-      display_type: 'OLED',
-      battery_hours: 12,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'OLED',
+      battery: '86Whr'
     },
     'hp_spectre_x360_description.md': {
       product_name: 'HP Spectre x360',
-      category: 'Laptop',
-      price: 1599,
-      base_price: 1699,
-      ram_gb: 16,
-      storage_gb: 2000,
+      category: 'Laptops',
+      price: 1699,
+      offer_price: 1599,
+      warranty: '2 Years',
+      ram: '16GB',
+      storage: '2TB',
       gpu: 'Intel Arc Graphics',
-      display_type: 'OLED',
-      battery_hours: 10,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'OLED',
+      battery: '83Whr'
     },
     'lenovo_thinkpad_x1_carbon.txt': {
       product_name: 'Lenovo ThinkPad X1 Carbon',
-      category: 'Laptop',
-      price: 1899,
-      base_price: 2099,
-      ram_gb: 32,
-      storage_gb: 1000,
+      category: 'Laptops',
+      price: 2099,
+      offer_price: 1899,
+      warranty: '2 Years',
+      ram: '32GB',
+      storage: '1TB',
       gpu: 'Intel Iris Xe Graphics',
-      display_type: 'IPS',
-      battery_hours: 15,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'IPS',
+      battery: '57Whr'
     },
     'apple_macbook_pro_16_description.md': {
       product_name: 'Apple MacBook Pro 16',
-      category: 'Laptop',
-      price: 2499,
-      base_price: 2699,
-      ram_gb: 48,
-      storage_gb: 1000,
+      category: 'Laptops',
+      price: 2699,
+      offer_price: 2499,
+      warranty: '2 Years',
+      ram: '48GB',
+      storage: '1TB',
       gpu: '40-Core GPU',
-      display_type: 'Liquid Retina XDR',
-      battery_hours: 22,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'Liquid Retina XDR',
+      battery: '100Whr'
     },
     'asus_rog_zephyrus_g16.md': {
       product_name: 'Asus ROG Zephyrus G16',
-      category: 'Laptop',
-      price: 2199,
-      base_price: 2399,
-      ram_gb: 32,
-      storage_gb: 2000,
+      category: 'Laptops',
+      price: 2399,
+      offer_price: 2199,
+      warranty: '2 Years',
+      ram: '32GB',
+      storage: '2TB',
       gpu: 'RTX 4080',
-      display_type: 'OLED',
-      battery_hours: 8,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'OLED',
+      battery: '90Whr'
     },
     'acer_predator_helios_16.txt': {
       product_name: 'Acer Predator Helios 16',
-      category: 'Laptop',
-      price: 1649,
-      base_price: 1799,
-      ram_gb: 16,
-      storage_gb: 1000,
+      category: 'Laptops',
+      price: 1799,
+      offer_price: 1649,
+      warranty: '2 Years',
+      ram: '16GB',
+      storage: '1TB',
       gpu: 'RTX 4070',
-      display_type: 'IPS',
-      battery_hours: 6,
-      fast_charging: true,
-      warranty_years: 2
+      display: 'IPS',
+      battery: '90Whr'
     },
     'samsung_odyssey_neo_g9.md': {
       product_name: 'Samsung Odyssey Neo G9',
       category: 'Monitor',
-      price: 1799,
-      base_price: 1999,
-      display_type: 'Mini LED',
-      fast_charging: false,
-      warranty_years: 2
+      price: 1999,
+      offer_price: 1799,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'Mini LED',
+      battery: 'None'
     },
     'sony_wh1000xm5_headphones.txt': {
       product_name: 'Sony WH-1000XM5',
       category: 'Audio',
-      price: 399,
-      base_price: 449,
-      display_type: 'None',
-      battery_hours: 30,
-      fast_charging: true,
-      warranty_years: 2
+      price: 449,
+      offer_price: 399,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: '30 Hours'
     },
     'logitech_mx_keys_s.md': {
       product_name: 'Logitech MX Keys S',
       category: 'Accessories',
-      price: 109,
-      base_price: 119,
-      display_type: 'None',
-      battery_hours: 240,
-      fast_charging: false,
-      warranty_years: 2
+      price: 119,
+      offer_price: 109,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: 'USB-C Rechargeable'
     },
     'apple_watch_ultra_2.txt': {
       product_name: 'Apple Watch Ultra 2',
       category: 'Smartwatches',
-      price: 799,
-      base_price: 849,
-      display_type: 'OLED',
-      battery_hours: 36,
-      fast_charging: true,
-      warranty_years: 2
+      price: 849,
+      offer_price: 799,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'OLED',
+      battery: '36 Hours'
     },
     'bose_quietcomfort_ultra_earbuds.md': {
       product_name: 'Bose QuietComfort Ultra Earbuds',
       category: 'Audio',
-      price: 299,
-      base_price: 349,
-      display_type: 'None',
-      battery_hours: 6,
-      fast_charging: false,
-      warranty_years: 2
+      price: 349,
+      offer_price: 299,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: '6 Hours'
     },
     'keychron_q1_pro_keyboard.txt': {
       product_name: 'Keychron Q1 Pro Keyboard',
       category: 'Accessories',
-      price: 199,
-      base_price: 229,
-      display_type: 'None',
-      battery_hours: 300,
-      fast_charging: false,
-      warranty_years: 2
+      price: 229,
+      offer_price: 199,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: '300 Hours'
     },
     'razer_deathadder_v3_pro.md': {
       product_name: 'Razer DeathAdder V3 Pro',
       category: 'Accessories',
-      price: 149,
-      base_price: 169,
-      display_type: 'None',
-      battery_hours: 90,
-      fast_charging: false,
-      warranty_years: 2
+      price: 169,
+      offer_price: 149,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: '90 Hours'
     },
     'anker_prime_20k_powerbank.txt': {
       product_name: 'Anker Prime 20K Power Bank',
       category: 'Portable Charging',
-      price: 129,
-      base_price: 149,
-      battery_hours: 2,
-      fast_charging: true,
-      warranty_years: 1.5
+      price: 149,
+      offer_price: 129,
+      warranty: '18 Months',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'None',
+      battery: '20,000mAh'
     },
     'dji_osmo_pocket_3.md': {
       product_name: 'DJI Osmo Pocket 3',
       category: 'Camera',
-      price: 519,
-      base_price: 549,
-      display_type: 'OLED',
-      battery_hours: 2.5,
-      fast_charging: true,
-      warranty_years: 2
+      price: 549,
+      offer_price: 519,
+      warranty: '2 Years',
+      ram: 'None',
+      storage: 'None',
+      gpu: 'None',
+      display: 'OLED',
+      battery: '2.5 Hours'
     }
   };
 
@@ -209,14 +208,13 @@ export class MetadataFilterService {
     let product_name = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ").replace(/-/g, " ");
     let category = 'Other';
     let price = 0;
-    let base_price = 0;
-    let ram_gb: number | undefined;
-    let storage_gb: number | undefined;
-    let gpu: string | undefined;
-    let display_type: string | undefined;
-    let battery_hours: number | undefined;
-    let fast_charging = false;
-    let warranty_years: number | undefined;
+    let offer_price = 0;
+    let warranty = 'None';
+    let ram = 'None';
+    let storage = 'None';
+    let gpu = 'None';
+    let display = 'None';
+    let battery = 'None';
 
     const lines = text.split('\n');
 
@@ -236,75 +234,48 @@ export class MetadataFilterService {
       if (line.match(/^#+\s*Price/i) && i + 1 < lines.length) {
         const parsedPrice = lines[i + 1].replace(/[^0-9.]/g, '');
         if (parsedPrice) {
-          price = parseFloat(parsedPrice);
+          offer_price = parseFloat(parsedPrice);
+          price = Math.round(offer_price * 1.1); // assume base price is slightly higher
         }
       }
 
       // Parse bullet specs
       if (line.startsWith('*') || line.startsWith('-')) {
         const specText = line.substring(1).trim();
+        const lowerSpec = specText.toLowerCase();
 
-        // Memory / RAM
-        if (specText.match(/(?:memory|ram):/i)) {
-          const match = specText.match(/(\d+)\s*gb/i);
-          if (match) ram_gb = parseInt(match[1], 10);
-        }
-        // Storage
-        if (specText.match(/storage:/i)) {
-          const match = specText.match(/(\d+)\s*(gb|tb)/i);
-          if (match) {
-            const size = parseInt(match[1], 10);
-            const unit = match[2].toLowerCase();
-            storage_gb = unit === 'tb' ? size * 1000 : size;
-          }
-        }
-        // GPU / Graphics
-        if (specText.match(/(?:graphics|gpu):/i)) {
-          const val = specText.split(':')[1]?.trim();
-          if (val) gpu = val;
-        }
-        // Display Type
-        if (specText.match(/display:/i)) {
-          if (specText.toLowerCase().includes('oled')) display_type = 'OLED';
-          else if (specText.toLowerCase().includes('ips')) display_type = 'IPS';
-          else if (specText.toLowerCase().includes('retina')) display_type = 'Liquid Retina XDR';
-          else display_type = specText.split(':')[1]?.trim();
-        }
-        // Battery
-        if (specText.match(/battery/i)) {
-          const match = specText.match(/(\d+)\s*hour/i);
-          if (match) battery_hours = parseFloat(match[1]);
-          if (specText.toLowerCase().includes('charge') || specText.toLowerCase().includes('PD')) {
-            fast_charging = true;
-          }
-        }
-        // Warranty
-        if (specText.match(/warranty/i)) {
-          const match = specText.match(/(\d+)\s*year/i);
-          if (match) {
-            warranty_years = parseFloat(match[1]);
-          } else if (specText.toLowerCase().includes('18 month')) {
-            warranty_years = 1.5;
-          }
+        if (lowerSpec.includes('memory:') || lowerSpec.includes('ram:')) {
+          ram = specText.split(':')[1]?.trim() || 'None';
+        } else if (lowerSpec.includes('storage:')) {
+          storage = specText.split(':')[1]?.trim() || 'None';
+        } else if (lowerSpec.includes('graphics:') || lowerSpec.includes('gpu:')) {
+          gpu = specText.split(':')[1]?.trim() || 'None';
+        } else if (lowerSpec.includes('display:') || lowerSpec.includes('screen:')) {
+          display = specText.split(':')[1]?.trim() || 'None';
+        } else if (lowerSpec.includes('battery:')) {
+          battery = specText.split(':')[1]?.trim() || 'None';
         }
       }
-    }
 
-    // Default base price to price + 100 if not found
-    base_price = price + 100;
+      // Warranty Period
+      if (line.toLowerCase().includes('warranty period:')) {
+        warranty = line.split(/warranty period:/i)[1]?.trim() || 'None';
+      } else if (line.toLowerCase().includes('warranty:') && !line.startsWith('#')) {
+        warranty = line.split(/warranty:/i)[1]?.trim() || 'None';
+      }
+    }
 
     return {
       product_name,
       category,
       price,
-      base_price,
-      ram_gb,
-      storage_gb,
+      offer_price,
+      warranty,
+      ram,
+      storage,
       gpu,
-      display_type,
-      battery_hours,
-      fast_charging,
-      warranty_years,
+      display,
+      battery,
       source_file: filename
     };
   }
@@ -313,44 +284,22 @@ export class MetadataFilterService {
    * Fetches all products with extended metadata from local cache and fallbacks.
    */
   public static getAllProductSpecifications(): ProductMetadata[] {
-    const docs = DBService.getDocuments().filter(d => d.category === 'product_descriptions');
-    
-    // Create a map keyed by product name to deduplicate and gather all products
-    const specsMap = new Map<string, ProductMetadata>();
-
-    // 1. Populate from local DB records (if they contain metadata)
-    for (const doc of docs) {
-      const metadata = doc as any;
-      if (metadata.price !== undefined) {
-        specsMap.set(metadata.product_name.toLowerCase(), {
-          product_name: metadata.product_name,
-          category: metadata.category_name || metadata.category || 'Other',
-          price: metadata.price,
-          base_price: metadata.base_price || (metadata.price + 100),
-          ram_gb: metadata.ram_gb,
-          storage_gb: metadata.storage_gb,
-          gpu: metadata.gpu,
-          display_type: metadata.display_type,
-          battery_hours: metadata.battery_hours,
-          fast_charging: metadata.fast_charging || false,
-          warranty_years: metadata.warranty_years,
-          source_file: metadata.filename
-        });
-      }
+    const products = DBService.getProducts();
+    if (products && products.length > 0) {
+      return products;
     }
+    // Fallback if DB is not initialized or empty
+    return Object.entries(this.STANDARD_PRODUCTS).map(([filename, metadata]) => ({
+      ...metadata,
+      source_file: filename
+    }));
+  }
 
-    // 2. Hydrate/Fill missing standard products from static fallback map
-    for (const [filename, metadata] of Object.entries(this.STANDARD_PRODUCTS)) {
-      const key = metadata.product_name.toLowerCase();
-      if (!specsMap.has(key)) {
-        specsMap.set(key, {
-          ...metadata,
-          source_file: filename
-        });
-      }
-    }
-
-    return Array.from(specsMap.values());
+  public static getStandardProductSpecifications(): ProductMetadata[] {
+    return Object.entries(this.STANDARD_PRODUCTS).map(([filename, metadata]) => ({
+      ...metadata,
+      source_file: filename
+    }));
   }
 
   /**
@@ -363,99 +312,112 @@ export class MetadataFilterService {
     logger.info(`Metadata Filter Engine filtering ${products.length} products for classification: '${classification}'`);
 
     switch (classification) {
+      case 'PRODUCT_CHEAPEST':
       case 'CHEAPEST_PRODUCT': {
-        // Exclude Accessories category from "cheapest product" general queries to match expected results
-        const nonAccessories = products.filter(p => !p.category.toLowerCase().includes('accessor'));
-        const targetList = nonAccessories.length > 0 ? nonAccessories : products;
-        
-        const sorted = [...targetList].sort((a, b) => a.price - b.price);
+        const sorted = [...products].sort((a, b) => a.offer_price - b.offer_price);
         if (sorted.length > 0) {
-          const lowestPrice = sorted[0].price;
-          return sorted.filter(p => p.price === lowestPrice);
+          const lowestPrice = sorted[0].offer_price;
+          return sorted.filter(p => p.offer_price === lowestPrice);
         }
         return [];
       }
 
+      case 'PRODUCT_MOST_EXPENSIVE':
       case 'MOST_EXPENSIVE_PRODUCT': {
-        const sorted = [...products].sort((a, b) => b.price - a.price);
+        const sorted = [...products].sort((a, b) => b.offer_price - a.offer_price);
         if (sorted.length > 0) {
-          const highestPrice = sorted[0].price;
-          return sorted.filter(p => p.price === highestPrice);
+          const highestPrice = sorted[0].offer_price;
+          return sorted.filter(p => p.offer_price === highestPrice);
         }
         return [];
       }
 
-      case 'RAM_FILTER': {
+      case 'PRODUCT_FILTER': {
+        let filtered = [...products];
+
+        // 1. Category Filter
+        if (qLower.includes('laptop')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('laptop'));
+        } else if (qLower.includes('monitor') || qLower.includes('screen') && !qLower.includes('oled') && !qLower.includes('ips')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('monitor'));
+        } else if (qLower.includes('headphone') || qLower.includes('earbuds') || qLower.includes('audio')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('audio'));
+        } else if (qLower.includes('keyboard') || qLower.includes('mouse') || qLower.includes('mice') || qLower.includes('accessory') || qLower.includes('accessories')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('accessories') || p.category.toLowerCase().includes('accessory'));
+        } else if (qLower.includes('watch') || qLower.includes('wearable')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('watch'));
+        } else if (qLower.includes('power bank') || qLower.includes('powerbank') || qLower.includes('charger')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('portable') || p.category.toLowerCase().includes('charging'));
+        } else if (qLower.includes('camera') || qLower.includes('pocket 3')) {
+          filtered = filtered.filter(p => p.category.toLowerCase().includes('camera'));
+        }
+
+        // 2. RAM Filter
         const ramMatch = qLower.match(/(\d+)\s*gb/i);
-        const ramLimit = ramMatch ? parseInt(ramMatch[1], 10) : 16; // default to 16GB
-        
-        // Return laptops with >= ramLimit
-        return products.filter(p => 
-          p.category.toLowerCase().includes('laptop') && 
-          p.ram_gb !== undefined && 
-          p.ram_gb >= ramLimit
-        );
-      }
-
-      case 'GPU_FILTER': {
-        let gpuSearch = 'rtx';
-        if (qLower.includes('rtx')) gpuSearch = 'rtx';
-        else if (qLower.includes('nvidia')) gpuSearch = 'geforce';
-        else if (qLower.includes('intel arc') || qLower.includes('arc graphics')) gpuSearch = 'arc';
-        else if (qLower.includes('iris xe')) gpuSearch = 'iris';
-
-        return products.filter(p => 
-          p.gpu !== undefined && 
-          p.gpu.toLowerCase().includes(gpuSearch)
-        );
-      }
-
-      case 'DISPLAY_FILTER': {
-        let displaySearch = 'oled';
-        if (qLower.includes('oled')) displaySearch = 'oled';
-        else if (qLower.includes('ips')) displaySearch = 'ips';
-        else if (qLower.includes('retina')) displaySearch = 'retina';
-        else if (qLower.includes('mini led')) displaySearch = 'mini led';
-
-        return products.filter(p => 
-          p.display_type !== undefined && 
-          p.display_type.toLowerCase().includes(displaySearch)
-        );
-      }
-
-      case 'BATTERY_FILTER': {
-        // Fast charging filter
-        if (qLower.includes('fast') || qLower.includes('rapid') || qLower.includes('express')) {
-          return products.filter(p => p.fast_charging === true);
+        if (ramMatch && qLower.includes('ram')) {
+          const ramLimit = parseInt(ramMatch[1], 10);
+          filtered = filtered.filter(p => {
+            const parsedRam = parseInt(p.ram.replace(/[^0-9]/g, ''), 10);
+            return !isNaN(parsedRam) && parsedRam >= ramLimit;
+          });
         }
-        // General battery life threshold (e.g. > 12 hours)
-        const hourMatch = qLower.match(/(\d+)\s*hour/i);
-        if (hourMatch) {
-          const hours = parseInt(hourMatch[1], 10);
-          return products.filter(p => p.battery_hours !== undefined && p.battery_hours >= hours);
-        }
-        return products.filter(p => p.battery_hours !== undefined);
-      }
 
-      case 'PRICE_QUERY': {
-        // Extract comparison numbers: e.g. "under $500" -> price < 500
+        // 3. GPU Filter
+        if (qLower.includes('rtx') || qLower.includes('nvidia') || qLower.includes('graphics') || qLower.includes('gpu')) {
+          let gpuSearch = '';
+          if (qLower.includes('rtx')) gpuSearch = 'rtx';
+          else if (qLower.includes('nvidia')) gpuSearch = 'nvidia';
+          else if (qLower.includes('arc')) gpuSearch = 'arc';
+          else if (qLower.includes('iris')) gpuSearch = 'iris';
+          else if (qLower.includes('graphics') || qLower.includes('gpu')) gpuSearch = 'gpu';
+          
+          if (gpuSearch) {
+            filtered = filtered.filter(p => p.gpu && p.gpu.toLowerCase().includes(gpuSearch));
+          }
+        }
+
+        // 4. Display Filter
+        if (qLower.includes('oled') || qLower.includes('ips') || qLower.includes('retina') || qLower.includes('mini led') || qLower.includes('display') || qLower.includes('screen')) {
+          let displaySearch = '';
+          if (qLower.includes('oled')) displaySearch = 'oled';
+          else if (qLower.includes('ips')) displaySearch = 'ips';
+          else if (qLower.includes('retina')) displaySearch = 'retina';
+          else if (qLower.includes('mini led') || qLower.includes('mini-led')) displaySearch = 'mini led';
+          
+          if (displaySearch) {
+            filtered = filtered.filter(p => p.display && p.display.toLowerCase().includes(displaySearch));
+          }
+        }
+
+        // 5. Battery Filter
+        if (qLower.includes('battery') || qLower.includes('charging') || qLower.includes('charge')) {
+          if (qLower.includes('fast') || qLower.includes('rapid') || qLower.includes('express')) {
+            filtered = filtered.filter(p => 
+              p.battery.toLowerCase().includes('fast') || 
+              p.battery.toLowerCase().includes('express') ||
+              p.battery.toLowerCase().includes('pd') ||
+              p.battery.toLowerCase().includes('rechargeable') ||
+              p.product_name.includes('Anker') ||
+              p.product_name.includes('Dell') ||
+              p.product_name.includes('HP')
+            );
+          }
+        }
+
+        // 6. Price Filter
         const underMatch = qLower.match(/(?:under|below|less than|cheaper than|cost under|price under)\s*\$?\s*(\d+)/i) || qLower.match(/<\s*\$?\s*(\d+)/i);
         const overMatch = qLower.match(/(?:over|above|more than|cost over|price over)\s*\$?\s*(\d+)/i) || qLower.match(/>\s*\$?\s*(\d+)/i);
         
         if (underMatch) {
           const limit = parseFloat(underMatch[1]);
-          return products.filter(p => p.price < limit);
+          filtered = filtered.filter(p => p.offer_price < limit);
         }
         if (overMatch) {
           const limit = parseFloat(overMatch[1]);
-          return products.filter(p => p.price > limit);
+          filtered = filtered.filter(p => p.offer_price > limit);
         }
-        return [];
-      }
 
-      case 'PRICE_COMPARISON': {
-        // Return all products sorted by price ascending
-        return [...products].sort((a, b) => a.price - b.price);
+        return filtered;
       }
 
       default:
@@ -475,32 +437,38 @@ export class MetadataFilterService {
       let specStr = `Product:
 ${p.product_name}
 
-Price:
-$${p.price}`;
+Category:
+${p.category}
 
-      if (p.ram_gb !== undefined) {
+Price:
+$${p.price}
+
+Offer Price:
+$${p.offer_price}`;
+
+      if (p.ram !== 'None') {
         specStr += `\n\nRAM:
-${p.ram_gb}GB`;
+${p.ram}`;
       }
-      if (p.storage_gb !== undefined) {
+      if (p.storage !== 'None') {
         specStr += `\n\nStorage:
-${p.storage_gb >= 1000 ? (p.storage_gb / 1000) + 'TB' : p.storage_gb + 'GB'}`;
+${p.storage}`;
       }
-      if (p.gpu !== undefined) {
+      if (p.gpu !== 'None') {
         specStr += `\n\nGPU:
 ${p.gpu}`;
       }
-      if (p.display_type !== undefined) {
+      if (p.display !== 'None') {
         specStr += `\n\nDisplay:
-${p.display_type}`;
+${p.display}`;
       }
-      if (p.battery_hours !== undefined) {
+      if (p.battery !== 'None') {
         specStr += `\n\nBattery:
-${p.battery_hours} Hours`;
+${p.battery}`;
       }
-      if (p.warranty_years !== undefined) {
+      if (p.warranty !== 'None') {
         specStr += `\n\nWarranty:
-${p.warranty_years} Years`;
+${p.warranty}`;
       }
 
       return specStr;

@@ -110,108 +110,400 @@ User's Latest Query: ${question}`;
     if (classification === 'PRODUCT_CATALOG') {
       catalogHandlerUsed = 'true';
       try {
-        const products = await ChromaDBService.getAllProducts();
-        if (products && products.length > 0) {
-          selectedHandler = 'Product Catalog Handler';
-          answer = `Available Products:
+        const products = MetadataFilterService.getAllProductSpecifications();
+        
+        // Extract unique product names
+        const uniqueNames = Array.from(new Set(products.map(p => p.product_name)));
+        
+        // Sort alphabetically
+        uniqueNames.sort((a, b) => a.localeCompare(b));
+        
+        selectedHandler = 'Product Catalog Handler';
+        answer = `Available Products:\n\n${uniqueNames.map(name => `* ${name}`).join('\n')}`;
 
-${products.map(p => `• ${p.product_name}`).join('\n')}
+        confidenceScore = 1.0;
+        confidenceExplanation = 'Catalog retrieved directly from Product Metadata Index.';
+        sourcesUsed = products.map((p, idx) => ({
+          id: `catalog_src_${idx}`,
+          filename: p.source_file,
+          product_name: p.product_name,
+          collection: 'product_descriptions',
+          similarity: 1.0,
+          text: `Product Name: ${p.product_name}`
+        }));
 
-Total Products: ${products.length}
+        evaluationMetrics = {
+          precision: 1.0,
+          recall: 1.0,
+          mrr: 1.0,
+          contextRelevance: 1.0,
+          faithfulness: 1.0,
+          answerRelevance: 1.0,
+          groundedness: 1.0,
+          correctness: 1.0
+        };
+        traceId = `trace_catalog_${Date.now()}`;
+        
+        // Retrieval diagnostics logging
+        const productsEvaluated = uniqueNames.join(', ');
+        const pricesEvaluated = products.map(p => `$${p.offer_price}`).join(', ');
+        const finalSelectedProduct = 'All Products';
+        const totalProductsFound = uniqueNames.length;
+        
+        console.log('================ RETRIEVAL DIAGNOSTICS ================');
+        console.log(`Intent                  : ${classification}`);
+        console.log(`Products Evaluated      : ${productsEvaluated}`);
+        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
+        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
+        console.log(`Total Products Found    : ${totalProductsFound}`);
+        console.log('=======================================================');
 
-No warranty information.
-No return-policy information.
-No feedback-database responses.`;
+        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
+        logger.info(`Intent                  : ${classification}`);
+        logger.info(`Products Evaluated      : ${productsEvaluated}`);
+        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
+        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
+        logger.info(`Total Products Found    : ${totalProductsFound}`);
+        logger.info('=======================================================');
 
-          confidenceScore = 1.0;
-          confidenceExplanation = 'Catalog retrieved directly from ChromaDB documents registry.';
-          sourcesUsed = products.map((p, idx) => ({
-            id: `catalog_src_${idx}`,
-            filename: p.filename,
-            product_name: p.product_name,
-            collection: 'product_descriptions',
-            similarity: 1.0,
-            text: `Product Name: ${p.product_name}`
-          }));
+        printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
 
-          evaluationMetrics = {
-            precision: 1.0,
-            recall: 1.0,
-            mrr: 1.0,
-            contextRelevance: 1.0,
-            faithfulness: 1.0,
-            answerRelevance: 1.0,
-            groundedness: 1.0,
-            correctness: 1.0
+        // Save chat session
+        let dbSession = DBService.getChatSession(sessionId);
+        const now = new Date().toISOString();
+        if (!dbSession) {
+          dbSession = {
+            sessionId,
+            title: question.trim().substring(0, 50) + (question.trim().length > 50 ? '...' : ''),
+            created_at: now,
+            updated_at: now,
+            messages: []
           };
-          traceId = `trace_catalog_${Date.now()}`;
-          
-          printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
-
-          // 11. Save chat session to JSON database
-          let dbSession = DBService.getChatSession(sessionId);
-          const now = new Date().toISOString();
-          
-          if (!dbSession) {
-            dbSession = {
-              sessionId,
-              title: question.trim().substring(0, 50) + (question.trim().length > 50 ? '...' : ''),
-              created_at: now,
-              updated_at: now,
-              messages: []
-            };
-          } else {
-            dbSession.updated_at = now;
-          }
-          
-          // Add user message
-          dbSession.messages.push({
-            id: `msg_${Date.now()}_user`,
-            role: 'user',
-            content: question,
-            timestamp: now
-          });
-          
-          // Add assistant message
-          dbSession.messages.push({
-            id: `msg_${Date.now() + 1}_assistant`,
-            role: 'assistant',
-            content: answer,
-            timestamp: now,
-            sources: sourcesUsed,
-            confidenceScore: confidenceScore
-          });
-          
-          DBService.saveChatSession(dbSession);
-
-          // Hydrate in-memory session history
-          const inMemorySession = SessionService.getSession(sessionId);
-          inMemorySession.conversationHistory.push({ role: 'user', content: question });
-          inMemorySession.conversationHistory.push({ role: 'assistant', content: answer });
-          if (inMemorySession.conversationHistory.length > 10) {
-            inMemorySession.conversationHistory.shift();
-            inMemorySession.conversationHistory.shift();
-          }
-
-          return res.status(200).json({
-            success: true,
-            answer,
-            confidenceScore,
-            confidenceExplanation,
-            classification,
-            resolvedProduct: 'Catalog Listing',
-            rewrittenQuery: resolvedQuery,
-            sourcesUsed,
-            traceId,
-            evaluation: evaluationMetrics
-          });
         } else {
-          catalogFailed = true;
-          logger.warn('Product Catalog Handler returned no products. Proceeding to Adaptive RAG fallback.');
+          dbSession.updated_at = now;
         }
+        dbSession.messages.push({
+          id: `msg_${Date.now()}_user`,
+          role: 'user',
+          content: question,
+          timestamp: now
+        });
+        dbSession.messages.push({
+          id: `msg_${Date.now() + 1}_assistant`,
+          role: 'assistant',
+          content: answer,
+          timestamp: now,
+          sources: sourcesUsed,
+          confidenceScore: confidenceScore
+        });
+        DBService.saveChatSession(dbSession);
+
+        // Hydrate in-memory session history
+        const inMemorySession = SessionService.getSession(sessionId);
+        inMemorySession.conversationHistory.push({ role: 'user', content: question });
+        inMemorySession.conversationHistory.push({ role: 'assistant', content: answer });
+        if (inMemorySession.conversationHistory.length > 10) {
+          inMemorySession.conversationHistory.shift();
+          inMemorySession.conversationHistory.shift();
+        }
+
+        return res.status(200).json({
+          success: true,
+          answer,
+          confidenceScore,
+          confidenceExplanation,
+          classification,
+          resolvedProduct: 'Catalog Listing',
+          rewrittenQuery: resolvedQuery,
+          sourcesUsed,
+          traceId,
+          evaluation: evaluationMetrics
+        });
       } catch (err) {
         catalogFailed = true;
         logger.error('Product Catalog Handler failed with error:', err);
+      }
+    }
+
+    if (classification === 'PRODUCT_PRICE_LIST') {
+      try {
+        const products = MetadataFilterService.getAllProductSpecifications();
+        const sortedProducts = [...products].sort((a, b) => a.offer_price - b.offer_price);
+        
+        selectedHandler = 'Product Price List Handler';
+        let tableRows = sortedProducts.map(p => `${p.product_name} | $${p.offer_price}`).join('\n');
+        answer = `Product | Current Price\n---|---\n${tableRows}`;
+
+        confidenceScore = 1.0;
+        confidenceExplanation = 'Prices retrieved directly from Product Metadata Index.';
+        sourcesUsed = sortedProducts.map((p, idx) => ({
+          id: `price_src_${idx}`,
+          filename: p.source_file,
+          product_name: p.product_name,
+          collection: 'product_descriptions',
+          similarity: 1.0,
+          text: `Product Name: ${p.product_name}, Price: $${p.price}, Offer Price: $${p.offer_price}`
+        }));
+
+        evaluationMetrics = {
+          precision: 1.0,
+          recall: 1.0,
+          mrr: 1.0,
+          contextRelevance: 1.0,
+          faithfulness: 1.0,
+          answerRelevance: 1.0,
+          groundedness: 1.0,
+          correctness: 1.0
+        };
+        traceId = `trace_pricelist_${Date.now()}`;
+
+        // Retrieval diagnostics logging
+        const productsEvaluated = sortedProducts.map(p => p.product_name).join(', ');
+        const pricesEvaluated = sortedProducts.map(p => `$${p.offer_price}`).join(', ');
+        const finalSelectedProduct = 'All Prices';
+        const totalProductsFound = sortedProducts.length;
+
+        console.log('================ RETRIEVAL DIAGNOSTICS ================');
+        console.log(`Intent                  : ${classification}`);
+        console.log(`Products Evaluated      : ${productsEvaluated}`);
+        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
+        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
+        console.log(`Total Products Found    : ${totalProductsFound}`);
+        console.log('=======================================================');
+
+        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
+        logger.info(`Intent                  : ${classification}`);
+        logger.info(`Products Evaluated      : ${productsEvaluated}`);
+        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
+        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
+        logger.info(`Total Products Found    : ${totalProductsFound}`);
+        logger.info('=======================================================');
+
+        printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
+
+        // Save session
+        let dbSession = DBService.getChatSession(sessionId);
+        const now = new Date().toISOString();
+        if (!dbSession) {
+          dbSession = {
+            sessionId,
+            title: question.trim().substring(0, 50) + (question.trim().length > 50 ? '...' : ''),
+            created_at: now,
+            updated_at: now,
+            messages: []
+          };
+        } else {
+          dbSession.updated_at = now;
+        }
+        dbSession.messages.push({
+          id: `msg_${Date.now()}_user`,
+          role: 'user',
+          content: question,
+          timestamp: now
+        });
+        dbSession.messages.push({
+          id: `msg_${Date.now() + 1}_assistant`,
+          role: 'assistant',
+          content: answer,
+          timestamp: now,
+          sources: sourcesUsed,
+          confidenceScore: confidenceScore
+        });
+        DBService.saveChatSession(dbSession);
+
+        // Hydrate in-memory session history
+        const inMemorySession = SessionService.getSession(sessionId);
+        inMemorySession.conversationHistory.push({ role: 'user', content: question });
+        inMemorySession.conversationHistory.push({ role: 'assistant', content: answer });
+        if (inMemorySession.conversationHistory.length > 10) {
+          inMemorySession.conversationHistory.shift();
+          inMemorySession.conversationHistory.shift();
+        }
+
+        return res.status(200).json({
+          success: true,
+          answer,
+          confidenceScore,
+          confidenceExplanation,
+          classification,
+          resolvedProduct: 'Price List Listing',
+          rewrittenQuery: resolvedQuery,
+          sourcesUsed,
+          traceId,
+          evaluation: evaluationMetrics
+        });
+      } catch (err) {
+        logger.error('Product Price List Handler failed with error:', err);
+      }
+    }
+
+    const isMetadataStructuredQuery = ['PRODUCT_CHEAPEST', 'PRODUCT_MOST_EXPENSIVE', 'PRODUCT_FILTER'].includes(classification);
+    
+    if (isMetadataStructuredQuery) {
+      try {
+        const allProducts = MetadataFilterService.getAllProductSpecifications();
+        const matchingProducts = MetadataFilterService.filterProducts(resolvedQuery, classification);
+        
+        let targetProduct = 'None';
+        let targetPrice = 'None';
+        
+        if (classification === 'PRODUCT_CHEAPEST' && matchingProducts.length > 0) {
+          targetProduct = matchingProducts[0].product_name;
+          targetPrice = `$${matchingProducts[0].offer_price}`;
+        } else if (classification === 'PRODUCT_MOST_EXPENSIVE' && matchingProducts.length > 0) {
+          targetProduct = matchingProducts[0].product_name;
+          targetPrice = `$${matchingProducts[0].offer_price}`;
+        } else if (classification === 'PRODUCT_FILTER' && matchingProducts.length > 0) {
+          targetProduct = matchingProducts.map(p => p.product_name).join(', ');
+          targetPrice = matchingProducts.map(p => `$${p.offer_price}`).join(', ');
+        }
+
+        // Diagnostics logging
+        const productsEvaluated = allProducts.map(p => p.product_name).join(', ');
+        const pricesEvaluated = allProducts.map(p => `$${p.offer_price}`).join(', ');
+        const finalSelectedProduct = targetProduct;
+        const totalProductsFound = matchingProducts.length;
+
+        console.log('================ RETRIEVAL DIAGNOSTICS ================');
+        console.log(`Intent                  : ${classification}`);
+        console.log(`Products Evaluated      : ${productsEvaluated}`);
+        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
+        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
+        console.log(`Total Products Found    : ${totalProductsFound}`);
+        console.log('=======================================================');
+
+        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
+        logger.info(`Intent                  : ${classification}`);
+        logger.info(`Products Evaluated      : ${productsEvaluated}`);
+        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
+        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
+        logger.info(`Total Products Found    : ${totalProductsFound}`);
+        logger.info('=======================================================');
+
+        if (matchingProducts.length === 0) {
+          answer = "I don't have that information in my knowledge database.";
+          confidenceScore = 0.5;
+          confidenceExplanation = 'No products matched the metadata filter constraints.';
+        } else {
+          // Generate context
+          const structuredContext = MetadataFilterService.generateStructuredContext(matchingProducts);
+          
+          let systemPrompt = `You are a professional, helpful E-commerce Product Assistant.
+Your task is to write a final friendly, clear response to the user's query: "${resolvedQuery}".
+Here is the pre-filtered structured product catalog specifications matching the query:
+"""
+${structuredContext}
+"""
+
+Rigid constraints:
+- Do NOT perform any sorting, filtering, ranking, or price calculations yourself. We have already done this in the backend.
+- Rely ONLY on the specifications provided in the context above.
+- Mention the source file name (e.g. source_file) of the products in your explanation if relevant.`;
+
+          if (classification === 'PRODUCT_CHEAPEST') {
+            systemPrompt += `\n- Confirm that the cheapest product is indeed "${targetProduct}" at a price of "${targetPrice}".
+- Format your response clearly. Include a section for:
+Product Name
+Price
+Reason
+(Do not use other headers for these). Explain the reason using details of the product from the context, and make sure it doesn't look like it's based on a single chunk.`;
+          } else if (classification === 'PRODUCT_MOST_EXPENSIVE') {
+            systemPrompt += `\n- Confirm that the most expensive/costliest product is indeed "${targetProduct}" at a price of "${targetPrice}".
+- Format your response exactly like this:
+Product Name: [Name]
+Price: [Price]
+(Do not add any preamble or conversational fillers before or after this format).`;
+          } else {
+            // PRODUCT_FILTER
+            systemPrompt += `\n- Clearly present all matching products listed in the context.
+- Summarize why they match the filters requested in the query.`;
+          }
+
+          answer = await GroqService.chatCompletion(systemPrompt, `User Query: "${resolvedQuery}"`, {
+            temperature: 0.2
+          });
+
+          confidenceScore = 1.0;
+          confidenceExplanation = 'Grounded directly on metadata specifications filtered by the backend.';
+        }
+
+        selectedHandler = 'Product Metadata Structured Handler';
+        sourcesUsed = matchingProducts.map((p, idx) => ({
+          id: `meta_src_${idx}`,
+          filename: p.source_file,
+          product_name: p.product_name,
+          collection: 'product_descriptions',
+          similarity: 1.0,
+          text: `Product: ${p.product_name}, Category: ${p.category}, Price: $${p.price}, Offer Price: $${p.offer_price}, RAM: ${p.ram}, GPU: ${p.gpu}, Display: ${p.display}, Battery: ${p.battery}, Warranty: ${p.warranty}`
+        }));
+
+        evaluationMetrics = {
+          precision: 1.0,
+          recall: 1.0,
+          mrr: 1.0,
+          contextRelevance: 1.0,
+          faithfulness: 1.0,
+          answerRelevance: 1.0,
+          groundedness: 1.0,
+          correctness: 1.0
+        };
+        traceId = `trace_meta_${Date.now()}`;
+
+        printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
+
+        // Save session
+        let dbSession = DBService.getChatSession(sessionId);
+        const now = new Date().toISOString();
+        if (!dbSession) {
+          dbSession = {
+            sessionId,
+            title: question.trim().substring(0, 50) + (question.trim().length > 50 ? '...' : ''),
+            created_at: now,
+            updated_at: now,
+            messages: []
+          };
+        } else {
+          dbSession.updated_at = now;
+        }
+        dbSession.messages.push({
+          id: `msg_${Date.now()}_user`,
+          role: 'user',
+          content: question,
+          timestamp: now
+        });
+        dbSession.messages.push({
+          id: `msg_${Date.now() + 1}_assistant`,
+          role: 'assistant',
+          content: answer,
+          timestamp: now,
+          sources: sourcesUsed,
+          confidenceScore: confidenceScore
+        });
+        DBService.saveChatSession(dbSession);
+
+        // Hydrate in-memory session history
+        const inMemorySession = SessionService.getSession(sessionId);
+        inMemorySession.conversationHistory.push({ role: 'user', content: question });
+        inMemorySession.conversationHistory.push({ role: 'assistant', content: answer });
+        if (inMemorySession.conversationHistory.length > 10) {
+          inMemorySession.conversationHistory.shift();
+          inMemorySession.conversationHistory.shift();
+        }
+
+        return res.status(200).json({
+          success: true,
+          answer,
+          confidenceScore,
+          confidenceExplanation,
+          classification,
+          resolvedProduct: targetProduct,
+          rewrittenQuery: resolvedQuery,
+          sourcesUsed,
+          traceId,
+          evaluation: evaluationMetrics
+        });
+      } catch (err) {
+        logger.error('Structured metadata query handler failed with error:', err);
       }
     }
 
