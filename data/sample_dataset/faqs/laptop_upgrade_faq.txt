@@ -1,0 +1,15 @@
+FAQ: Laptop Upgrades and Technical Modifications
+
+Q: Which laptop supports 32GB RAM?
+A: - Dell XPS 15: Configured with 32GB DDR5 RAM, and supports upgrades up to 64GB since it features 2x SO-DIMM slots.
+- Lenovo ThinkPad X1 Carbon: Configured with 32GB LPDDR5 RAM, but note that the RAM is soldered (onboard) and cannot be upgraded later.
+- ASUS ROG Zephyrus G16: Configured with 32GB LPDDR5X onboard RAM.
+- Apple MacBook Pro 16: Configured with 48GB unified memory (RAM is unified on the Apple Silicon chip and cannot be upgraded after purchase).
+- HP Spectre x360 14: Configured with 16GB onboard RAM (no upgrade slots available).
+
+Q: Which laptops support fast charging?
+A: - Dell XPS 15: Supports ExpressCharge fast charging (80% in 60 minutes).
+- HP Spectre x360: Supports HP Fast Charge (50% in 45 minutes).
+- Lenovo ThinkPad X1 Carbon: Supports Rapid Charge (80% in 60 minutes).
+- Apple MacBook Pro 16: Supports 140W fast charging via MagSafe (50% in 30 minutes).
+- ASUS ROG Zephyrus G16: Supports 100W USB-C Power Delivery fast charging (50% in 30 minutes).

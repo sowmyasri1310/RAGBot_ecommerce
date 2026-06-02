@@ -1,0 +1,17 @@
+User Manual & Safety Guide: Bose QuietComfort Ultra Earbuds
+
+How to get a perfect acoustic seal:
+1. Place the earbuds in your ear and rotate backward slightly.
+2. Ensure the soft umbrella tip sits comfortably at the entrance of your ear canal.
+3. Use the 'Bose Music App' and run the 'Ear Tip Fit Test' to verify sealing. A poor seal will degrade bass and noise cancellation performance.
+
+Touch Sensor Controls (Both Earbuds):
+- Media Playback: Tap once.
+- Call Control: Tap once to answer/end calls. Double tap to decline.
+- Volume: Swipe UP on the touch strip of either earbud to increase volume; swipe DOWN to decrease.
+- Cycle ANC Modes: Press and hold the touch strip. Cycles between Quiet (ANC On), Aware (Pass-through), and Immersion (Spatial Audio + ANC).
+
+Factory Reset Instructions:
+1. Place both earbuds into the charging case and leave the case open.
+2. Press and hold the button on the back of the case for 25 seconds until the light on the front flashes blue/amber.
+3. Delete the earbuds from the Bluetooth list on your phone and pair again.

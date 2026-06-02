@@ -1,0 +1,12 @@
+FAQ: Curved Gaming Monitor Setup and Compatibility
+
+Q: My monitor screen is black when using DisplayPort. How do I fix this?
+A: 1. Ensure the DisplayPort cable is fully pushed into both the monitor and your GPU (not the motherboard port).
+2. Check that the monitor input source is set to DisplayPort in the settings menu.
+3. If using a high-end monitor like the Samsung Odyssey Neo G9, make sure the cable is rated for DisplayPort 2.0/2.1 or DisplayPort 1.4. Cheap cables will fail to carry the required bandwidth.
+
+Q: Can I connect my Apple MacBook Pro to the 57" Dual UHD Odyssey Neo G9 monitor?
+A: Yes, you can. However, MacBook models with base Apple M-series chips (like base M1, M2, M3) only support one external monitor up to 6K at 60Hz. To run the Neo G9 at its full 7680 x 2160 resolution, you will need a MacBook Pro with an M-series Pro or Max chip and connect via an active Thunderbolt-to-DisplayPort cable or HDMI 2.1.
+
+Q: What is a MUX switch in gaming laptops?
+A: A MUX (Multiplexer) switch is a hardware switch that lets users manually connect the dedicated graphics card (like NVIDIA RTX) directly to the laptop screen, bypassing the integrated CPU graphics. This increases gaming performance and frame rates by 5% to 15% but reduces battery life.

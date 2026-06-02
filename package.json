@@ -1,0 +1,30 @@
+{
+  "name": "adaptive-rag-ecommerce-assistant",
+  "version": "1.0.0",
+  "description": "Adaptive RAG Powered E-commerce Product Assistant with ChromaDB, Groq, and LangSmith",
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "generate:dataset": "ts-node scripts/generate_dataset.ts",
+    "test:pipeline": "ts-node scripts/test_pipeline.ts"
+  },
+  "keywords": [
+    "rag",
+    "adaptive-rag",
+    "chromadb",
+    "groq",
+    "langsmith",
+    "react",
+    "nodejs"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.12.12"
+  }
+}

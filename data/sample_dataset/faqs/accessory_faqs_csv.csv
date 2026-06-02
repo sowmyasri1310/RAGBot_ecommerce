@@ -1,0 +1,6 @@
+id,question,answer,product_keywords,category_tag
+FAQ-1,How do I clean my mechanical keyboard keycaps?,Remove keycaps using a wire puller. Soak them in warm water mixed with mild soap for 15 minutes. Wipe dry and let air dry completely before re-attaching.,keycap; mechanical keyboard,hardware
+FAQ-2,What does IPX4 rating mean on earbuds?,IPX4 means the earbuds are protected against splashing water from any direction. They are sweatproof and safe for exercise but cannot be submerged in water.,water resistance; ipx4; earbuds,safety
+FAQ-3,Can I use my custom keyboard on a Mac?,Yes! Most keyboards like Keychron Q1 Pro have a toggle switch on the back to switch between macOS/iOS and Windows/Android configurations.,keychron; mac; toggle,compatibility
+FAQ-4,Why does my mouse cursor double click?,This is caused by worn-out mechanical copper switches. High-end mice like Razer DeathAdder V3 Pro use Optical Switches that use light beams instead of physical contacts preventing double-clicking bugs.,double click; razer; optical switch,troubleshooting
+FAQ-5,How do I travel with a lithium-battery power bank?,You must carry it inside your carry-on luggage. Power banks are strictly prohibited in checked baggage due to aviation fire hazards. The capacity must be under 100Whr (Anker Prime 20k is 72Whr and fully approved).,power bank; travel; carry-on,travel

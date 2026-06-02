@@ -1,0 +1,48 @@
+# Product Name
+Keychron Q1 Pro Mechanical Keyboard
+
+# Category
+Accessories
+
+# Price
+$199
+
+# Warranty
+Warranty Period: 2 Years
+Coverage: Manufacturing defects
+Support: Premium Support
+
+# Overview
+The Keychron Q1 Pro is a premium QMK/VIA wireless custom mechanical keyboard, boasting a full CNC aluminum body and double-gasket acoustic mounting.
+
+# Key Features
+* Premium full CNC machined aluminum body
+* Double-gasket acoustic mounting design for flex and soft sound
+* Hot-swappable sockets compatible with 3-pin and 5-pin mechanical switches
+
+# Technical Specifications
+* Layout: 75% Layout (82 keys) with programmable aluminum rotary encoder knob
+* Body: Premium CNC Machined Aluminum Case
+* Connectivity: Bluetooth 5.1 or wired USB-C mode
+* Switch Support: Hot-swappable compatible with 3-pin and 5-pin mechanical switches
+* Keycaps: Double-shot KSA profile PBT keycaps
+* Backlighting: South-facing RGB LEDs with 22 preset settings
+* Key Mapping: Fully customizable using VIA or QMK web launcher
+* Battery: 4000mAh rechargeable lithium battery (up to 300 hours with RGB off)
+
+# Recommended For
+* Keyboard Enthusiasts
+* Software Developers
+* Creative Writers
+* Typists
+
+# Accessories Included
+* USB-C to USB-C Cable
+* USB-A to USB-C Adapter
+* Keycap Puller
+* Switch Puller
+* Custom Screwdriver
+
+# FAQs
+* Q: Is it compatible with Mac?
+* A: Yes, it features a physical toggle switch to swap between Mac/iOS and Windows/Android layouts.

@@ -1,0 +1,9 @@
+Order Tracking and Delivery Signature Rules
+
+Tracking Information:
+Within 12 hours of order shipment, we will email your tracking link (UPS or FedEx). You can also view your live tracking codes in the client dashboard.
+
+Signature Requirements:
+To prevent package theft ("porch piracy"), we require a signature upon delivery for high-value orders:
+- **Orders over $300**: Signature is highly recommended. You can waive it in the carrier portal.
+- **Orders over $800**: Direct Signature is strictly REQUIRED. The carrier will not leave the package at your door or with a neighbor without a physical signature. If you are not home, the carrier will make 3 delivery attempts before returning the package to our warehouse.

@@ -1,0 +1,15 @@
+User Guide: Razer DeathAdder V3 Pro Wireless Mouse
+
+DPI Profile Switching:
+- Turn the mouse upside down.
+- Press the Power/DPI button once to cycle through the onboard DPI presets:
+  - Red: 400 DPI
+  - Green: 800 DPI (Default)
+  - Blue: 1600 DPI
+  - Cyan: 3200 DPI
+  - Yellow: 6400 DPI
+- To customize DPI values exactly, install 'Razer Synapse' on Windows.
+
+Calibrating Asymmetric Cut-off:
+- Open Razer Synapse. Select the mouse and go to Calibration settings.
+- Adjust the lift-off distance (LOD) and landing distance independently. This prevents cursor drift when lifting the mouse off the mousepad during intensive gaming sessions.

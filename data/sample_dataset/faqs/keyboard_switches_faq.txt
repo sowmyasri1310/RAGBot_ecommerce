@@ -1,0 +1,9 @@
+FAQ: Keyboard Switches and Customization
+
+Q: What is the difference between Linear, Tactile, and Clicky mechanical keyboard switches?
+A: - Linear switches (e.g. Gateron Red) are smooth and quiet from top to bottom, preferred for fast gaming inputs.
+- Tactile switches (e.g. Gateron Brown) have a physical bump in the middle of the keypress, giving tactile feedback without a loud click. Excellent for typing.
+- Clicky switches (e.g. Cherry Blue) have both a physical bump and a loud auditory click, preferred by people who love typing sound feedback.
+
+Q: Can I map custom shortcuts to the Keychron Q1 Pro knob?
+A: Yes. Connect the keyboard, open usevia.app, go to Layer 0/1/2 and click the knob icon. You can set rotations to zoom in/out, scroll web pages, or adjust keyboard RGB backlight brightness.

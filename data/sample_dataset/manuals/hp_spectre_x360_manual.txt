@@ -1,0 +1,20 @@
+User Manual: HP Spectre x360 14 Convertible Laptop
+
+Setup and Mode Adjustments:
+1. Four Screen Modes:
+   - Laptop Mode: Open the lid up to 135 degrees. Use for standard desktop work.
+   - Tent Mode: Rotate the screen 315 degrees and place the device on a flat surface like an inverted 'V'. Great for presentations.
+   - Reverse Mode: Rotate the screen 270 degrees and place the keyboard face-down. Recommended for video playback.
+   - Tablet Mode: Rotate the screen 360 degrees flat against the keyboard. The keyboard and trackpad are automatically disabled to prevent accidental clicks.
+
+Haptic Touchpad Customizations:
+- Go to Windows Settings > Bluetooth & Devices > Touchpad.
+- Toggle haptic feedback strength or customize multi-finger gestures.
+
+Stylus Charging & Connection:
+- The HP MPP 2.0 Tilt Pen is rechargeable. Slide open the top of the stylus to reveal the USB-C port.
+- Attach the stylus magnetically to the right side of the laptop when not in use.
+
+Overheating Solutions:
+- If the cooling fan is loud or the laptop gets hot, open the 'HP Command Center' app.
+- Under Thermal Profiles, select 'Smart Sense' or 'Cool' to throttle CPU performance and boost fan operations.

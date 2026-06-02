@@ -1,0 +1,43 @@
+# Product Name
+Apple Watch Ultra 2 GPS + Cellular
+
+# Category
+Smartwatches
+
+# Price
+$799
+
+# Warranty
+Warranty Period: 2 Years
+Coverage: Manufacturing defects
+Support: Premium Support
+
+# Overview
+The Apple Watch Ultra 2 is the ultimate rugged and capable sport smartwatch, engineered for athletes, outdoor adventurers, and deep-sea divers.
+
+# Key Features
+* 49mm aerospace-grade titanium case with raised edges to protect sapphire front crystal
+* Always-On Retina LTPO OLED display with up to 3000 nits brightness
+* Double Tap gesture for hands-free operations
+
+# Technical Specifications
+* Case Size: 49mm aerospace-grade titanium case
+* Chip: S9 SiP with 4-Core Neural Engine
+* GPS: Precision dual-frequency GPS (L1 and L5)
+* Water Resistance: 100 meters, recreational dive certified to 40 meters
+* Battery Life: Up to 36 hours of normal use, up to 72 hours in Low Power Mode
+* Sensors: Depth gauge, water temperature sensor, blood oxygen sensor, ECG, heart rate
+
+# Recommended For
+* Outdoor Adventurers
+* Extreme Sports Athletes
+* Deep-sea Divers
+* Endurance Runners
+
+# Accessories Included
+* Apple Watch Magnetic Fast Charger to USB-C Cable (1m)
+* Specially picked Alpine Loop, Trail Loop, or Ocean Band
+
+# FAQs
+* Q: Does it have a siren?
+* A: Yes, it features an 86-decibel siren audible up to 180 meters.

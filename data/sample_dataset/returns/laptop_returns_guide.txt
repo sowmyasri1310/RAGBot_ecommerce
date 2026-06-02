@@ -1,0 +1,13 @@
+E-commerce Laptop Return Procedures and Guidelines
+
+Return window: 30 days from date of purchase.
+
+Critical Requirements:
+1. Proof of Purchase: A copy of the order confirmation or invoice must be placed inside the return parcel.
+2. Account Deactivation: Before sending back your laptop (Dell, HP, Lenovo, MacBook), you MUST log out of all accounts:
+   - For MacBooks: Sign out of iCloud, Turn off 'Find My Mac', and perform a complete macOS reset.
+   - For Windows: Remove corporate MDM accounts, log out of Microsoft Accounts, and reset the PC to factory defaults.
+   If a returned laptop is password-protected or locked to a user account, the return will be REJECTED, and the laptop will be shipped back to you at your expense.
+
+Return Shipping Charges:
+We provide free return shipping labels for defective items. If the return is due to buyer remorse (change of mind), the buyer is responsible for return shipping costs ($15 flat rate will be deducted from your refund).

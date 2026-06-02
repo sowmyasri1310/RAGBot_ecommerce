@@ -1,0 +1,44 @@
+# Product Name
+Anker Prime 20K Power Bank
+
+# Category
+Portable Charging
+
+# Price
+$129
+
+# Warranty
+Warranty Period: 18 Months
+Coverage: Manufacturing defects
+Support: Premium Support
+
+# Overview
+The Anker Prime 200W Power Bank combines ultra-high capacity with blazing-fast charging outputs to keep your high-performance laptops and phones charged anywhere.
+
+# Key Features
+* High capacity 20,000mAh battery charging a MacBook Pro 16 to 50% in under 40 minutes
+* Blazing fast 200W maximum output across multiple ports
+* Digital LCD color display showing real-time wattages and battery health
+
+# Technical Specifications
+* Battery Capacity: 20,000mAh
+* Total Maximum Output: 200W across multiple ports
+* Port Configuration: 2x USB-C (100W Max per port), 1x USB-A (65W Max)
+* Recharging Speed: Supports up to 100W USB-C fast recharging (recharges to 100% in 75 minutes)
+* Smart Display: Digital LCD color screen showing real-time power inputs, outputs, and health
+* Dimensions: 126.8 x 54.6 x 49.6 mm
+* Weight: 540 grams
+
+# Recommended For
+* Travel
+* Remote Work
+* Mobile Professionals
+
+# Accessories Included
+* 2ft 140W USB-C to USB-C Cable
+* Travel Pouch
+* Welcome Guide
+
+# FAQs
+* Q: Can I bring it on a flight?
+* A: Yes, it is rated at 72Whr, which is below the FAA 100Whr limit for carry-on luggage.

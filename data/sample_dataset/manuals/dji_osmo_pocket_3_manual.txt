@@ -1,0 +1,14 @@
+User Manual & Quickstart: DJI Osmo Pocket 3
+
+Operating Instructions:
+1. Turn On: Rotate the touchscreen 90 degrees clockwise. The gimbal will self-calibrate and center automatically.
+2. Turn Off: Rotate the screen back to its vertical position. The gimbal will automatically lock in protective storage mode after 5 seconds.
+3. Connection: Connect to the 'DJI Mimo' app via Wi-Fi for remote controls, live views, and firmware updates.
+
+Product Showcase Mode:
+- Access swipe-up settings. Toggle 'Product Showcase' ON.
+- The camera will automatically prioritize focusing on objects held close in front of the lens instead of staying locked on the presenter's face. Highly recommended for retail video reviews.
+
+Tracking Settings:
+- Double-tap a subject on the screen to initiate ActiveTrack 6.0.
+- Single-tap the screen to clear tracking.

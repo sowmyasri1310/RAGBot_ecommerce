@@ -1,0 +1,12 @@
+FAQ: Keyboards, Custom Keyboards, and Gaming Mice
+
+Q: What is hot-swappable in mechanical keyboards?
+A: A hot-swappable keyboard (like the Keychron Q1 Pro) allows users to pull out and replace the mechanical switches (like switches from Cherry, Gateron, or Kailh) directly without soldering anything. This lets you change the sound and typing feel of your keyboard easily.
+
+Q: Why is my wireless mouse stuttering or lagging?
+A: 1. Ensure the USB receiver is within 2 meters of the mouse and away from USB 3.0 ports which can cause Wi-Fi interference.
+2. Recharge the battery. Low battery states can cause polling frequency stutters.
+3. Clean the optical sensor on the bottom of the mouse with a cotton swab and a drop of isopropyl alcohol.
+
+Q: What is the benefit of a higher polling rate (e.g., 4000Hz or 8000Hz) in gaming mice?
+A: Standard gaming mice report their position 1,000 times per second (1000Hz). High polling rate mice (like the Razer DeathAdder V3 Pro with hyperpolling) report up to 8,000 times per second, lowering input latency from 1ms to 0.125ms. This results in smoother cursor movements on high-refresh-rate gaming monitors (240Hz+).

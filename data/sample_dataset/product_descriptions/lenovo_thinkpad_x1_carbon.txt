@@ -1,0 +1,45 @@
+# Product Name
+Lenovo ThinkPad X1 Carbon Gen 11 Business Laptop
+
+# Category
+Laptops
+
+# Price
+$1899
+
+# Warranty
+Warranty Period: 2 Years
+Coverage: Manufacturing defects
+Support: Premium Support
+
+# Overview
+The Lenovo ThinkPad X1 Carbon Gen 11 is the gold standard for enterprise laptops, offering legendary durability, outstanding performance, and premium security features in an ultra-light carbon-fiber chassis.
+
+# Key Features
+* Spill-resistant keyboard with the iconic red TrackPoint
+* Military-grade requirements tested (MIL-STD 810H)
+* High-security TPM 2.0 and Match-on-Chip Fingerprint Reader
+
+# Technical Specifications
+* Processor: Intel Core i7-1365U vPro (10 Cores, up to 5.2 GHz)
+* Memory: 32GB LPDDR5 RAM (Soldered)
+* Storage: 1TB PCIe NVMe Gen 4 SSD
+* Graphics: Intel Iris Xe Graphics
+* Display: 14.0" WUXGA (1920 x 1200) IPS, Anti-Glare, Low Blue Light, 400 nits
+* Battery: 57Whr battery supporting Rapid Charge (80% charge in 60 minutes using 65W charger)
+* Weight: 1.12 kg (2.48 lbs)
+* Operating System: Windows 11 Pro
+* Security: Discrete TPM 2.0, Match-on-Chip Fingerprint Reader, IR Camera with Privacy Shutter
+
+# Recommended For
+* Corporate Professionals
+* Frequent Travelers
+* Security-Focused Industries
+
+# Accessories Included
+* 65W USB-C Rapid Charger
+* User Manual
+
+# FAQs
+* Q: What is the TrackPoint?
+* A: It is the iconic red pointing stick in the center of the keyboard used for cursor navigation.

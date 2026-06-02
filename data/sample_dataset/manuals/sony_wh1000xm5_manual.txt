@@ -1,0 +1,19 @@
+Operation Manual: Sony WH-1000XM5 Headphones
+
+Touch Sensor Operations (Right Ear Cup):
+- Play / Pause: Tap twice quickly.
+- Next Track: Swipe forward (toward the front).
+- Previous Track: Swipe backward (toward the rear).
+- Increase Volume: Swipe upward repeatedly.
+- Decrease Volume: Swipe downward repeatedly.
+- Activate Voice Assistant: Press and hold the center of the panel.
+
+Speak-to-Chat Activation:
+- Place two fingers on the touch sensor panel and hold for 2 seconds. You will hear voice guidance say "Speak-to-chat activated".
+- Speak-to-chat automatically pauses your music when you speak to someone, and resumes music 15 seconds after you stop speaking.
+
+Multipoint Pairing (Connecting two devices):
+1. Open the 'Sony Headphones Connect' app.
+2. Turn on "Connect to 2 devices simultaneously".
+3. Pair the second device in the app's device manager.
+Note: While using multipoint, high-resolution LDAC codec is not available.

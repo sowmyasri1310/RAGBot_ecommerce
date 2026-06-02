@@ -1,0 +1,46 @@
+# Product Name
+Sony WH-1000XM5 Wireless Noise Cancelling Headphones
+
+# Category
+Audio
+
+# Price
+$399
+
+# Warranty
+Warranty Period: 2 Years
+Coverage: Manufacturing defects
+Support: Premium Support
+
+# Overview
+The Sony WH-1000XM5 wireless headphones rewrite the rules for distraction-free listening. With two processors controlling eight microphones, it delivers industry-leading active noise cancellation (ANC) and call quality.
+
+# Key Features
+* Industry-leading Active Noise Cancellation (ANC) with Auto NC Optimizer
+* Speak-to-Chat pauses music when you speak automatically
+* Multipoint connection to pair and use 2 Bluetooth devices simultaneously
+
+# Technical Specifications
+* Driver Unit: 30mm custom dome drivers
+* Noise Cancelling: Auto NC Optimizer adjusted based on atmospheric pressure
+* Bluetooth Version: 5.2 (LDAC, AAC, SBC codecs)
+* Battery Life: Up to 30 hours with ANC ON, Up to 40 hours with ANC OFF
+* Charging: USB Power Delivery fast charging (3 mins charge gives up to 5 hours playback)
+* Microphones: 4 microphones on each side for premium voice pickup and noise rejection
+* Weight: 250 grams
+* Smart Features: Speak-to-Chat, Quick Attention mode, Multipoint Connection
+
+# Recommended For
+* Office Meetings
+* Frequent Travelers
+* Daily Commuters
+* Audiophiles
+
+# Accessories Included
+* Premium Carrying Case
+* 1.2m Headphone Connection Cable
+* USB-C Charging Cable
+
+# FAQs
+* Q: Does it support high-res audio?
+* A: Yes, it supports Sony's high-res LDAC Bluetooth audio format.
