@@ -1,7 +1,7 @@
 import { MetadataService, ProductMetadata } from '../../services/metadataService';
 import { SessionService } from '../../services/session.service';
 import { logger } from '../../utils/logger';
-import { IntentType, IntentDetector, ProductFilters, extractUnknownCategory } from './intentDetector';
+import { IntentType, IntentDetector, ProductFilters, extractUnknownCategory, detectCategory } from './intentDetector';
 
 export interface RouterResult {
   handled: boolean;
@@ -138,12 +138,24 @@ export class QueryRouter {
       }
 
       case 'PRODUCT_CHEAPEST': {
-        const sorted = [...allProducts].sort((a, b) => a.offer_price - b.offer_price);
-        const cheapest = sorted[0];
-        const answer = `Product Name: ${cheapest.product_name}\nPrice: $${cheapest.offer_price}\nReason: Lowest price item overall.`;
+        // BUG 2 fix: filter by category if present in query (e.g. "cheapest laptop")
+        const detectedCat = detectCategory(query);
+        const pool = detectedCat
+          ? allProducts.filter(p => p.category.toLowerCase() === detectedCat.toLowerCase())
+          : allProducts;
 
-        const filtered = allNames.filter(n => n !== cheapest.product_name);
-        logDiagnostics(intent, 1, allNames.join(', '), filtered.join(', '), cheapest.product_name);
+        if (pool.length === 0) {
+          const answer = `We don\'t carry any ${detectedCat} in our catalog.\nWe currently offer: Laptops, Keyboards, Mouse, Earbuds, Smartwatch, Monitor, Power Bank, and Camera.`;
+          return { handled: true, answer, sourcesUsed: [], confidenceScore: 1.0, confidenceExplanation: 'Unknown category.', resolvedProduct: 'None' };
+        }
+
+        const sorted = [...pool].sort((a, b) => a.offer_price - b.offer_price);
+        const cheapest = sorted[0];
+        const scopeLabel = detectedCat ? `among ${detectedCat}s` : 'overall';
+        const answer = `Product Name: ${cheapest.product_name}\nPrice: $${cheapest.offer_price}\nReason: Lowest price item ${scopeLabel}.`;
+
+        const filteredNames = allNames.filter(n => n !== cheapest.product_name);
+        logDiagnostics(intent, 1, allNames.join(', '), filteredNames.join(', '), cheapest.product_name);
 
         return {
           handled: true,
@@ -154,21 +166,33 @@ export class QueryRouter {
             product_name: cheapest.product_name,
             collection: 'product_descriptions',
             similarity: 1.0,
-            text: `Cheapest item query resolved to: ${cheapest.product_name} ($${cheapest.offer_price}).`
+            text: `Cheapest ${detectedCat || 'product'} resolved to: ${cheapest.product_name} ($${cheapest.offer_price}).`
           }],
           confidenceScore: 1.0,
-          confidenceExplanation: 'Computed overall minimum offer price from productMetadata.json.',
+          confidenceExplanation: `Computed minimum offer price ${scopeLabel} from productMetadata.json.`,
           resolvedProduct: cheapest.product_name
         };
       }
 
       case 'PRODUCT_COSTLIEST': {
-        const sorted = [...allProducts].sort((a, b) => b.offer_price - a.offer_price);
-        const costliest = sorted[0];
-        const answer = `Product Name: ${costliest.product_name}\nPrice: $${costliest.offer_price}`;
+        // BUG 2 fix: filter by category if present in query (e.g. "most expensive laptop")
+        const detectedCat = detectCategory(query);
+        const pool = detectedCat
+          ? allProducts.filter(p => p.category.toLowerCase() === detectedCat.toLowerCase())
+          : allProducts;
 
-        const filtered = allNames.filter(n => n !== costliest.product_name);
-        logDiagnostics(intent, 1, allNames.join(', '), filtered.join(', '), costliest.product_name);
+        if (pool.length === 0) {
+          const answer = `We don\'t carry any ${detectedCat} in our catalog.\nWe currently offer: Laptops, Keyboards, Mouse, Earbuds, Smartwatch, Monitor, Power Bank, and Camera.`;
+          return { handled: true, answer, sourcesUsed: [], confidenceScore: 1.0, confidenceExplanation: 'Unknown category.', resolvedProduct: 'None' };
+        }
+
+        const sorted = [...pool].sort((a, b) => b.offer_price - a.offer_price);
+        const costliest = sorted[0];
+        const scopeLabel = detectedCat ? `among ${detectedCat}s` : 'overall';
+        const answer = `Product Name: ${costliest.product_name}\nPrice: $${costliest.offer_price}\nReason: Highest price item ${scopeLabel}.`;
+
+        const filteredNames = allNames.filter(n => n !== costliest.product_name);
+        logDiagnostics(intent, 1, allNames.join(', '), filteredNames.join(', '), costliest.product_name);
 
         return {
           handled: true,
@@ -179,10 +203,10 @@ export class QueryRouter {
             product_name: costliest.product_name,
             collection: 'product_descriptions',
             similarity: 1.0,
-            text: `Costliest item query resolved to: ${costliest.product_name} ($${costliest.offer_price}).`
+            text: `Costliest ${detectedCat || 'product'} resolved to: ${costliest.product_name} ($${costliest.offer_price}).`
           }],
           confidenceScore: 1.0,
-          confidenceExplanation: 'Computed overall maximum offer price from productMetadata.json.',
+          confidenceExplanation: `Computed maximum offer price ${scopeLabel} from productMetadata.json.`,
           resolvedProduct: costliest.product_name
         };
       }

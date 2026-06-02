@@ -187,12 +187,21 @@ export class IntentDetector {
     const hasFilter = filterKeywords.test(q);
     const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q) || /\b\d+\s*hour\b/i.test(q);
 
-    // BUG 1 & 2 — Recommendation queries checks
-    const recommendationKeywords = /\b(best|suggest|recommend|which one should|which is better|good for|suitable for|budget friendly|worth buying|which one)\b/i;
+    // BUG 1 — Recommendation + affordability queries → NORMAL_RAG
+    // Rule: If query contains ANY recommendation trigger word AND references a known
+    // category or product, classify as NORMAL_RAG — never as out-of-scope.
+    const recommendationKeywords = /\b(best|suggest|recommend|which one should|which is better|good for|suitable for|budget friendly|budget-friendly|affordable|good value|best value|worth buying|which one|which should i buy|what should i get|best for|should i get|is it worth|value for money)\b/i;
     const isRecommendation = recommendationKeywords.test(q);
 
     if (isRecommendation && (hasCategory || mentionsSpecificProduct)) {
-      logger.info(`[IntentDetector] Recommendation query detected. Routing to NORMAL_RAG.`);
+      logger.info(`[IntentDetector] Recommendation/affordability query detected. Routing to NORMAL_RAG.`);
+      return 'NORMAL_RAG';
+    }
+
+    // BUG 1 (edge case) — Recommendation intent with no specific category/product → still NORMAL_RAG
+    // e.g. "budget friendly laptop" where hasCategory may be false but the intent is clearly advisory
+    if (isRecommendation) {
+      logger.info(`[IntentDetector] Standalone recommendation query (no category match). Routing to NORMAL_RAG.`);
       return 'NORMAL_RAG';
     }
 
@@ -236,19 +245,42 @@ export class IntentDetector {
       return 'PRODUCT_DETAIL';
     }
 
-    // 5. PRODUCT_FILTER (Category / specs / price limit / constraints) (BUG 1)
+    // BUG 2 — Category-aware cheapest/costliest (e.g. "cheapest laptop", "laptop with lowest price")
+    // Must fire BEFORE the generic PRODUCT_FILTER rule to avoid misrouting.
+    const categoryCheapestPattern = /\b(cheapest|lowest.?price|least expensive|minimum price|lowest priced|lowest cost)\b/i;
+    const categoryCostliestPattern = /\b(most expensive|highest.?price|costliest|maximum price|highest priced|highest cost)\b/i;
+
+    if (hasCategory && categoryCheapestPattern.test(q)) {
+      logger.info(`[IntentDetector] Category-cheapest pattern detected. Routing to PRODUCT_CHEAPEST.`);
+      return 'PRODUCT_CHEAPEST';
+    }
+    if (hasCategory && categoryCostliestPattern.test(q)) {
+      logger.info(`[IntentDetector] Category-costliest pattern detected. Routing to PRODUCT_COSTLIEST.`);
+      return 'PRODUCT_COSTLIEST';
+    }
+
+    // BUG 3 — Standalone budget/price-range filter with no category → PRODUCT_FILTER across whole catalog
+    // e.g. "show me products under $2000", "items below $500", "anything under 300 dollars"
+    const budgetRangePattern = /\b(under|below|less than|above|more than|over|between|cheaper than)\b.*?(\$\d+|\d+\s*dollars?)/i;
+    const noBudgetCategory = !hasCategory && !mentionsSpecificProduct;
+    if (noBudgetCategory && budgetRangePattern.test(q)) {
+      logger.info(`[IntentDetector] Standalone budget/price-range query detected (no category). Routing to PRODUCT_FILTER.`);
+      return 'PRODUCT_FILTER';
+    }
+
+    // 5. PRODUCT_FILTER (Category / specs / price limit / constraints)
     if (hasCategory || hasFilter || hasPriceLimit || mentionsSpecificProduct) {
-      if (cheapestKeywords.test(q) || costliestKeywords.test(q) || priceLimitKeywords.test(q) || hasFilter || hasCategory) {
+      if (priceLimitKeywords.test(q) || hasFilter || hasCategory) {
         return 'PRODUCT_FILTER';
       }
     }
 
-    // 6. PRODUCT_CHEAPEST (Overall cheapest)
+    // 6. PRODUCT_CHEAPEST (Overall cheapest, no category)
     if (cheapestKeywords.test(q)) {
       return 'PRODUCT_CHEAPEST';
     }
 
-    // 7. PRODUCT_COSTLIEST (Overall costliest)
+    // 7. PRODUCT_COSTLIEST (Overall costliest, no category)
     if (costliestKeywords.test(q)) {
       return 'PRODUCT_COSTLIEST';
     }
