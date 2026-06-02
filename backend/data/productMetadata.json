@@ -1,0 +1,152 @@
+[
+  {
+    "product_name": "Dell XPS 15",
+    "category": "laptop",
+    "price": 1999,
+    "offer_price": 1899,
+    "warranty": "2 years",
+    "ram": "32GB",
+    "storage": "1TB SSD",
+    "gpu": "NVIDIA RTX 4070"
+  },
+  {
+    "product_name": "HP Spectre x360",
+    "category": "laptop",
+    "price": 1699,
+    "offer_price": 1599,
+    "warranty": "2 years",
+    "ram": "16GB",
+    "storage": "2TB SSD",
+    "gpu": "Intel Arc Graphics"
+  },
+  {
+    "product_name": "Lenovo ThinkPad X1 Carbon",
+    "category": "laptop",
+    "price": 2099,
+    "offer_price": 1899,
+    "warranty": "2 years",
+    "ram": "32GB",
+    "storage": "1TB SSD",
+    "gpu": "Intel Iris Xe Graphics"
+  },
+  {
+    "product_name": "Apple MacBook Pro 16",
+    "category": "laptop",
+    "price": 2699,
+    "offer_price": 2499,
+    "warranty": "2 years",
+    "ram": "48GB",
+    "storage": "1TB SSD",
+    "gpu": "40-Core GPU"
+  },
+  {
+    "product_name": "Asus ROG Zephyrus G16",
+    "category": "laptop",
+    "price": 2399,
+    "offer_price": 2199,
+    "warranty": "2 years",
+    "ram": "32GB",
+    "storage": "2TB SSD",
+    "gpu": "NVIDIA RTX 4080"
+  },
+  {
+    "product_name": "Acer Predator Helios 16",
+    "category": "laptop",
+    "price": 1799,
+    "offer_price": 1649,
+    "warranty": "2 years",
+    "ram": "16GB",
+    "storage": "1TB SSD",
+    "gpu": "NVIDIA RTX 4070"
+  },
+  {
+    "product_name": "Samsung Odyssey Neo G9",
+    "category": "monitor",
+    "price": 1999,
+    "offer_price": 1799,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Sony WH-1000XM5",
+    "category": "audio",
+    "price": 449,
+    "offer_price": 399,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Logitech MX Keys S",
+    "category": "accessories",
+    "price": 119,
+    "offer_price": 109,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Apple Watch Ultra 2",
+    "category": "smartwatches",
+    "price": 849,
+    "offer_price": 799,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Bose QuietComfort Ultra Earbuds",
+    "category": "audio",
+    "price": 349,
+    "offer_price": 299,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Keychron Q1 Pro Keyboard",
+    "category": "accessories",
+    "price": 229,
+    "offer_price": 199,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Razer DeathAdder V3 Pro",
+    "category": "accessories",
+    "price": 169,
+    "offer_price": 149,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "Anker Prime 20K Power Bank",
+    "category": "portable charging",
+    "price": 149,
+    "offer_price": 129,
+    "warranty": "18 months",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  },
+  {
+    "product_name": "DJI Osmo Pocket 3",
+    "category": "camera",
+    "price": 549,
+    "offer_price": 519,
+    "warranty": "2 years",
+    "ram": "None",
+    "storage": "None",
+    "gpu": "None"
+  }
+]

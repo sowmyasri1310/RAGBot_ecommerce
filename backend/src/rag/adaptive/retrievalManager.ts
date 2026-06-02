@@ -26,11 +26,12 @@ export class RetrievalManager {
    */
   public static async retrieve(
     rewrittenQuery: string,
-    classification: string
+    classification: string,
+    where?: any
   ): Promise<RetrievedChunk[]> {
     logger.info(`Rerouting retrieval based on classification: '${classification}'`);
-
-    // 1. Check for Catalog Listing Query (Bypass normal similarity retrieval)
+    
+    // We keep existing catalog listing chunk generation logic for safety, but it's now bypassed by the router
     if (classification === 'PRODUCT_CATALOG') {
       logger.info('Query routing matched PRODUCT_CATALOG. Bypassing vector search and invoking getAllProducts().');
       
@@ -127,7 +128,7 @@ Total Products: ${products.length}`;
       
       const queryPromises = targetCollections.map(async (colName) => {
         try {
-          const results = await ChromaDBService.queryCollection(colName, queryVector, topK);
+          const results = await ChromaDBService.queryCollection(colName, queryVector, topK, where);
           return results.map(item => ({
             ...item,
             collection: colName

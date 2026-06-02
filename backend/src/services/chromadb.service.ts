@@ -164,7 +164,8 @@ export class ChromaDBService {
   public static async queryCollection(
     collectionName: string,
     queryEmbedding: number[],
-    topK: number = 3
+    topK: number = 3,
+    where?: any
   ): Promise<Array<{
     id: string;
     text: string;
@@ -176,10 +177,11 @@ export class ChromaDBService {
     try {
       const collection = this.getCollection(activeName);
 
-      logger.debug(`Querying collection '${activeName}' (topK = ${topK})...`);
+      logger.debug(`Querying collection '${activeName}' (topK = ${topK}, where = ${JSON.stringify(where)})...`);
       const results = await collection.query({
         queryEmbeddings: [queryEmbedding],
-        nResults: topK
+        nResults: topK,
+        where
       });
 
       const items: any[] = [];

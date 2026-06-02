@@ -41,7 +41,7 @@ export class GroqService {
     } = {}
   ): Promise<string> {
     if (this.isMockMode || !this.client) {
-      return this.generateMockResponse(systemPrompt, userPrompt, options.responseFormatJson);
+      return this.generateMockResponse(systemPrompt, userPrompt, !!options.responseFormatJson);
     }
 
     const model = options.model || 'llama-3.1-8b-instant';
@@ -63,9 +63,17 @@ export class GroqService {
       });
 
       return response.choices[0]?.message?.content || '';
-    } catch (error) {
-      logger.error('Groq API call encountered an error. Falling back to mock generator:', error);
-      return this.generateMockResponse(systemPrompt, userPrompt, options.responseFormatJson);
+    } catch (error: any) {
+      logger.error('Groq API call encountered an error:', error);
+      
+      const errorMessage = error?.message || String(error);
+      const isRateLimit = error?.status === 429 || errorMessage.includes('429') || errorMessage.toLowerCase().includes('rate limit');
+      
+      if (isRateLimit) {
+        throw new Error('Rate limit reached. Please wait a moment and try again.');
+      }
+      
+      throw error;
     }
   }
 

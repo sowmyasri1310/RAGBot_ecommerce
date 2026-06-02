@@ -9,6 +9,8 @@ export interface SessionState {
   currentProduct: string | null;
   conversationHistory: ChatMessage[];
   lastRetrievedSources: any[];
+  lastIntent: string | null;
+  lastFilterCategory: string | null;
 }
 
 export class SessionService {
@@ -24,7 +26,9 @@ export class SessionService {
       session = {
         currentProduct: null,
         conversationHistory: [],
-        lastRetrievedSources: []
+        lastRetrievedSources: [],
+        lastIntent: null,
+        lastFilterCategory: null
       };
       this.sessions.set(sessionId, session);
     }
