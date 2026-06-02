@@ -125,6 +125,7 @@ export class DocumentService {
           product_name: productMetadata.product_name || cleanProductName,
           category: productMetadata.category || 'Other',
           price: productMetadata.price || 0,
+          base_price: productMetadata.base_price || productMetadata.price || 0,
           offer_price: productMetadata.offer_price || 0,
           warranty: productMetadata.warranty || 'None',
           ram: productMetadata.ram || 'None',

@@ -80,6 +80,30 @@ User's Latest Query: ${question}`;
     const classificationResult = await QueryClassifier.classify(resolvedQuery);
     const classification = classificationResult.classification;
 
+    // Fetch all products for diagnostics
+    const allMetadataProducts = MetadataFilterService.getAllProductSpecifications();
+    const allProductNames = allMetadataProducts.map(p => p.product_name);
+
+    // Diagnostic logger helper (Step 10)
+    const logRetrievalDiagnostics = (
+      intent: string,
+      resultsFound: string | number,
+      evaluated: string,
+      filtered: string,
+      finalSelected: string
+    ) => {
+      const block = `
+================ RETRIEVAL DIAGNOSTICS ================
+Detected Intent        : ${intent}
+Metadata Results Found : ${resultsFound}
+Products Evaluated     : ${evaluated}
+Products Filtered      : ${filtered}
+Final Product Selected : ${finalSelected}
+=======================================================`;
+      console.log(block);
+      logger.info(block);
+    };
+
     // Routing logs setup
     let selectedHandler = 'Adaptive RAG System';
     let feedbackSearchUsed = 'false';
@@ -144,27 +168,13 @@ User's Latest Query: ${question}`;
         };
         traceId = `trace_catalog_${Date.now()}`;
         
-        // Retrieval diagnostics logging
-        const productsEvaluated = uniqueNames.join(', ');
-        const pricesEvaluated = products.map(p => `$${p.offer_price}`).join(', ');
-        const finalSelectedProduct = 'All Products';
-        const totalProductsFound = uniqueNames.length;
-        
-        console.log('================ RETRIEVAL DIAGNOSTICS ================');
-        console.log(`Intent                  : ${classification}`);
-        console.log(`Products Evaluated      : ${productsEvaluated}`);
-        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
-        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
-        console.log(`Total Products Found    : ${totalProductsFound}`);
-        console.log('=======================================================');
-
-        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
-        logger.info(`Intent                  : ${classification}`);
-        logger.info(`Products Evaluated      : ${productsEvaluated}`);
-        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
-        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
-        logger.info(`Total Products Found    : ${totalProductsFound}`);
-        logger.info('=======================================================');
+        logRetrievalDiagnostics(
+          classification,
+          uniqueNames.length,
+          allProductNames.join(', '),
+          'None',
+          'All Products'
+        );
 
         printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
 
@@ -257,27 +267,13 @@ User's Latest Query: ${question}`;
         };
         traceId = `trace_pricelist_${Date.now()}`;
 
-        // Retrieval diagnostics logging
-        const productsEvaluated = sortedProducts.map(p => p.product_name).join(', ');
-        const pricesEvaluated = sortedProducts.map(p => `$${p.offer_price}`).join(', ');
-        const finalSelectedProduct = 'All Prices';
-        const totalProductsFound = sortedProducts.length;
-
-        console.log('================ RETRIEVAL DIAGNOSTICS ================');
-        console.log(`Intent                  : ${classification}`);
-        console.log(`Products Evaluated      : ${productsEvaluated}`);
-        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
-        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
-        console.log(`Total Products Found    : ${totalProductsFound}`);
-        console.log('=======================================================');
-
-        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
-        logger.info(`Intent                  : ${classification}`);
-        logger.info(`Products Evaluated      : ${productsEvaluated}`);
-        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
-        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
-        logger.info(`Total Products Found    : ${totalProductsFound}`);
-        logger.info('=======================================================');
+        logRetrievalDiagnostics(
+          classification,
+          sortedProducts.length,
+          allProductNames.join(', '),
+          'None',
+          'All Prices'
+        );
 
         printRoutingLogs(classification, selectedHandler, feedbackSearchUsed, catalogHandlerUsed);
 
@@ -337,7 +333,7 @@ User's Latest Query: ${question}`;
       }
     }
 
-    const isMetadataStructuredQuery = ['PRODUCT_CHEAPEST', 'PRODUCT_MOST_EXPENSIVE', 'PRODUCT_FILTER'].includes(classification);
+    const isMetadataStructuredQuery = ['PRODUCT_CHEAPEST', 'PRODUCT_COSTLIEST', 'PRODUCT_FILTER'].includes(classification);
     
     if (isMetadataStructuredQuery) {
       try {
@@ -350,7 +346,7 @@ User's Latest Query: ${question}`;
         if (classification === 'PRODUCT_CHEAPEST' && matchingProducts.length > 0) {
           targetProduct = matchingProducts[0].product_name;
           targetPrice = `$${matchingProducts[0].offer_price}`;
-        } else if (classification === 'PRODUCT_MOST_EXPENSIVE' && matchingProducts.length > 0) {
+        } else if (classification === 'PRODUCT_COSTLIEST' && matchingProducts.length > 0) {
           targetProduct = matchingProducts[0].product_name;
           targetPrice = `$${matchingProducts[0].offer_price}`;
         } else if (classification === 'PRODUCT_FILTER' && matchingProducts.length > 0) {
@@ -358,27 +354,14 @@ User's Latest Query: ${question}`;
           targetPrice = matchingProducts.map(p => `$${p.offer_price}`).join(', ');
         }
 
-        // Diagnostics logging
-        const productsEvaluated = allProducts.map(p => p.product_name).join(', ');
-        const pricesEvaluated = allProducts.map(p => `$${p.offer_price}`).join(', ');
-        const finalSelectedProduct = targetProduct;
-        const totalProductsFound = matchingProducts.length;
-
-        console.log('================ RETRIEVAL DIAGNOSTICS ================');
-        console.log(`Intent                  : ${classification}`);
-        console.log(`Products Evaluated      : ${productsEvaluated}`);
-        console.log(`Prices Evaluated        : ${pricesEvaluated}`);
-        console.log(`Final Selected Product  : ${finalSelectedProduct}`);
-        console.log(`Total Products Found    : ${totalProductsFound}`);
-        console.log('=======================================================');
-
-        logger.info('================ RETRIEVAL DIAGNOSTICS ================');
-        logger.info(`Intent                  : ${classification}`);
-        logger.info(`Products Evaluated      : ${productsEvaluated}`);
-        logger.info(`Prices Evaluated        : ${pricesEvaluated}`);
-        logger.info(`Final Selected Product  : ${finalSelectedProduct}`);
-        logger.info(`Total Products Found    : ${totalProductsFound}`);
-        logger.info('=======================================================');
+        const filteredList = allProductNames.filter(name => !matchingProducts.some(m => m.product_name === name));
+        logRetrievalDiagnostics(
+          classification,
+          matchingProducts.length,
+          allProductNames.join(', '),
+          filteredList.length > 0 ? filteredList.join(', ') : 'None',
+          targetProduct
+        );
 
         if (matchingProducts.length === 0) {
           answer = "I don't have that information in my knowledge database.";
@@ -407,8 +390,8 @@ Product Name
 Price
 Reason
 (Do not use other headers for these). Explain the reason using details of the product from the context, and make sure it doesn't look like it's based on a single chunk.`;
-          } else if (classification === 'PRODUCT_MOST_EXPENSIVE') {
-            systemPrompt += `\n- Confirm that the most expensive/costliest product is indeed "${targetProduct}" at a price of "${targetPrice}".
+          } else if (classification === 'PRODUCT_COSTLIEST') {
+            systemPrompt += `\n- Confirm that the costliest product is indeed "${targetProduct}" at a price of "${targetPrice}".
 - Format your response exactly like this:
 Product Name: [Name]
 Price: [Price]
@@ -416,7 +399,7 @@ Price: [Price]
           } else {
             // PRODUCT_FILTER
             systemPrompt += `\n- Clearly present all matching products listed in the context.
-- Summarize why they match the filters requested in the query.`;
+            - Summarize why they match the filters requested in the query.`;
           }
 
           answer = await GroqService.chatCompletion(systemPrompt, `User Query: "${resolvedQuery}"`, {
@@ -574,19 +557,42 @@ Price: [Price]
         logger.warn('Adaptive RAG retrieval returned 0 chunks. Proceeding to Feedback Search.');
       } else {
         // Update active product context dynamically based on top retrieved sources
+        let resolvedProduct = '';
         if (classification === 'PRODUCT_DETAIL') {
           const topChunk = retrievedChunks[0];
           if (topChunk.metadata && topChunk.metadata.product_name && topChunk.metadata.product_name !== 'Catalog Listing') {
-            SessionService.setCurrentProduct(sessionId, topChunk.metadata.product_name);
+            resolvedProduct = topChunk.metadata.product_name;
+            SessionService.setCurrentProduct(sessionId, resolvedProduct);
           }
         } else if (
-          classification === 'PRODUCT_COMPARISON' || 
-          classification === 'PRODUCT_RECOMMENDATION' || 
           classification === 'PRODUCT_CATALOG' ||
-          isMetadataQuery
+          classification === 'PRODUCT_PRICE_LIST' ||
+          classification === 'PRODUCT_CHEAPEST' ||
+          classification === 'PRODUCT_COSTLIEST' ||
+          classification === 'PRODUCT_FILTER'
         ) {
-          // Clear active product context when moving to comparison/recommendation/catalog/filters
+          // Clear active product context when moving to catalog/filters/pricing
           SessionService.setCurrentProduct(sessionId, '');
+        }
+
+        // Add logging for standard RAG path
+        if (classification === 'PRODUCT_DETAIL') {
+          const filteredList = allProductNames.filter(name => name !== resolvedProduct);
+          logRetrievalDiagnostics(
+            classification,
+            resolvedProduct ? 1 : 0,
+            allProductNames.join(', '),
+            resolvedProduct ? filteredList.join(', ') : allProductNames.join(', '),
+            resolvedProduct || 'None'
+          );
+        } else if (classification === 'NORMAL_RAG') {
+          logRetrievalDiagnostics(
+            classification,
+            'N/A',
+            'N/A',
+            'N/A',
+            'N/A'
+          );
         }
 
         let candidateChunks = retrievedChunks;

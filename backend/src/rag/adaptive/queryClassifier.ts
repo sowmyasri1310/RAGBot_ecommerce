@@ -6,14 +6,10 @@ export interface ClassificationResult {
     | 'PRODUCT_CATALOG'
     | 'PRODUCT_PRICE_LIST'
     | 'PRODUCT_CHEAPEST'
-    | 'PRODUCT_MOST_EXPENSIVE'
-    | 'PRODUCT_FILTER'
+    | 'PRODUCT_COSTLIEST'
     | 'PRODUCT_DETAIL'
-    | 'PRODUCT_COMPARISON'
-    | 'PRODUCT_RECOMMENDATION'
-    | 'WARRANTY_QUERY'
-    | 'RETURN_POLICY_QUERY'
-    | 'FAQ_QUERY';
+    | 'PRODUCT_FILTER'
+    | 'NORMAL_RAG';
   confidence: number; // between 0.0 and 1.0
   rationale: string;
 }
@@ -107,76 +103,7 @@ export class QueryClassifier {
     const q = query.toLowerCase().trim().replace(/[?.]/g, '');
     logger.info(`Running deterministic query classifier on: "${query}"`);
 
-    // 1. PRODUCT_CHEAPEST
-    if (/\b(cheapest|lowest price|least expensive|cheapest cost|lowest cost|minimum price|cheapest product|cheapest item|lowest priced|cheapest of all)\b/i.test(q)) {
-      return {
-        classification: 'PRODUCT_CHEAPEST',
-        confidence: 1.0,
-        rationale: 'Deterministic match for cheapest product query.'
-      };
-    }
-
-    // 2. PRODUCT_MOST_EXPENSIVE
-    if (/\b(most expensive|highest price|costliest|highest cost|maximum price|most priced|highest priced|costliest product|costliest item|most expensive product)\b/i.test(q)) {
-      return {
-        classification: 'PRODUCT_MOST_EXPENSIVE',
-        confidence: 1.0,
-        rationale: 'Deterministic match for most expensive product query.'
-      };
-    }
-
-    // 3. PRODUCT_PRICE_LIST (Price List / Price Comparison)
-    if (/\b(price|cost|prices|costs|pricing)\b/i.test(q)) {
-      if (/\b(all|compare|list|for each|every|difference|vs|versus|show prices|give prices)\b/i.test(q)) {
-        return {
-          classification: 'PRODUCT_PRICE_LIST',
-          confidence: 1.0,
-          rationale: 'Deterministic match for product price list query.'
-        };
-      }
-    }
-
-    // 4. PRODUCT_FILTER (RAM, GPU, Display, Battery, Price Query under/over)
-    if (
-      /\b(ram|memory|rtx|nvidia|gpu|graphics|intel arc|iris xe|graphics card|oled|ips|liquid retina|retina xdr|display|screen|resolution|curved|monitor|battery|charging|fast charge|fast charging|recharging|expresscharge|rapid charge|battery life|battery hours)\b/i.test(q) ||
-      /\$/i.test(q) ||
-      /\b(under|below|less than|above|more than|over|between)\b/i.test(q)
-    ) {
-      // Must look like a filter/limit query
-      if (
-        /\b\d+\s*gb\b/i.test(q) || 
-        /\b\d+\s*hour\b/i.test(q) || 
-        /\b(under|below|less than|above|more than|over|between)\s*\$?\s*\d+/i.test(q) ||
-        /\b(oled|ips|liquid retina|retina xdr|curved|rtx|nvidia|intel arc|iris xe)\b/i.test(q) ||
-        /laptops with/i.test(q) || /products with/i.test(q) || /laptops under/i.test(q)
-      ) {
-        return {
-          classification: 'PRODUCT_FILTER',
-          confidence: 1.0,
-          rationale: 'Deterministic match for product metadata filters.'
-        };
-      }
-    }
-
-    // 5. PRODUCT_COMPARISON
-    if (/\b(compare|comparison|vs|versus|difference between|differ)\b/i.test(q)) {
-      return {
-        classification: 'PRODUCT_COMPARISON',
-        confidence: 1.0,
-        rationale: 'Deterministic match for product comparison query.'
-      };
-    }
-
-    // 6. PRODUCT_RECOMMENDATION
-    if (/\b(recommend|recommendation|best|suggest|suitable|advise|for travel|for gaming|for video editing)\b/i.test(q)) {
-      return {
-        classification: 'PRODUCT_RECOMMENDATION',
-        confidence: 1.0,
-        rationale: 'Deterministic match for product recommendation query.'
-      };
-    }
-
-    // 7. PRODUCT_CATALOG
+    // 0. PRODUCT_CATALOG Check
     if (this.isCatalogQuery(query)) {
       return {
         classification: 'PRODUCT_CATALOG',
@@ -185,25 +112,61 @@ export class QueryClassifier {
       };
     }
 
-    // 8. WARRANTY_QUERY
-    if (/\b(warranty|guarantee)\b/i.test(q)) {
+    // Define keywords
+    const categoryKeywords = /\b(laptop|laptops|monitor|monitors|headphones|earbuds|keyboard|keyboards|mouse|mice|watch|watches|power bank|powerbank|charger|camera|pocket)\b/i;
+    const filterKeywords = /\b(ram|memory|rtx|nvidia|gpu|graphics|intel arc|iris xe|graphics card|oled|ips|liquid retina|retina xdr|display|screen|resolution|curved|battery|charging|fast charge|fast charging|recharging|expresscharge|rapid charge|battery life|battery hours)\b/i;
+    const cheapestKeywords = /\b(cheapest|lowest price|least expensive|cheapest cost|lowest cost|minimum price|cheapest product|cheapest item|lowest priced|cheapest of all)\b/i;
+    const costliestKeywords = /\b(most expensive|highest price|costliest|highest cost|maximum price|most priced|highest priced|costliest product|costliest item|most expensive product)\b/i;
+    const priceListKeywords = /\b(price|cost|prices|costs|pricing)\b/i;
+    const listKeywords = /\b(all|compare|list|for each|every|difference|vs|versus|show prices|give prices|table)\b/i;
+    const priceLimitKeywords = /\b(under|below|less than|above|more than|over|between|\$)\b/i;
+
+    // Check specific product name pricing query (e.g. "actual price of Dell XPS 15")
+    const mentionsSpecificProduct = /\b(dell|xps|hp spectre|spectre x360|spectre|macbook|mac book|zephyrus|rog zephyrus|acer|predator|helios|thinkpad|lenovo|sony|wh-1000xm5|wh1000xm5|bose|quietcomfort|apple watch|watch ultra|dji|osmo|pocket 3|logitech|mx keys|keychron|q1 pro|razer|deathadder|samsung odyssey|odyssey neo|odyssey|anker prime|anker|samsung|logitech mx)\b/i.test(q);
+
+    // 1. PRODUCT_FILTER (Must check this before CHEAPEST/COSTLIEST so category/spec cheapest go to PRODUCT_FILTER)
+    const hasCategory = categoryKeywords.test(q);
+    const hasFilter = filterKeywords.test(q);
+    const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q) || /\b\d+\s*hour\b/i.test(q);
+
+    if (hasCategory || hasFilter || hasPriceLimit || mentionsSpecificProduct) {
+      if (cheapestKeywords.test(q) || costliestKeywords.test(q) || priceLimitKeywords.test(q) || (priceListKeywords.test(q) && mentionsSpecificProduct) || hasFilter) {
+        return {
+          classification: 'PRODUCT_FILTER',
+          confidence: 1.0,
+          rationale: 'Deterministic match for product metadata filter constraint query.'
+        };
+      }
+    }
+
+    // 2. PRODUCT_PRICE_LIST (Price List / Price Comparison)
+    if (priceListKeywords.test(q) && listKeywords.test(q)) {
       return {
-        classification: 'WARRANTY_QUERY',
+        classification: 'PRODUCT_PRICE_LIST',
         confidence: 1.0,
-        rationale: 'Deterministic match for warranty query.'
+        rationale: 'Deterministic match for product price list query.'
       };
     }
 
-    // 9. RETURN_POLICY_QUERY
-    if (/\b(return|refund|policy|restocking|fee|return window|return policy)\b/i.test(q)) {
+    // 3. PRODUCT_CHEAPEST
+    if (cheapestKeywords.test(q)) {
       return {
-        classification: 'RETURN_POLICY_QUERY',
+        classification: 'PRODUCT_CHEAPEST',
         confidence: 1.0,
-        rationale: 'Deterministic match for return policy query.'
+        rationale: 'Deterministic match for cheapest product query.'
       };
     }
 
-    // 10. PRODUCT_DETAIL
+    // 4. PRODUCT_COSTLIEST
+    if (costliestKeywords.test(q)) {
+      return {
+        classification: 'PRODUCT_COSTLIEST',
+        confidence: 1.0,
+        rationale: 'Deterministic match for costliest product query.'
+      };
+    }
+
+    // 5. PRODUCT_DETAIL
     if (this.isProductDetailQuery(query)) {
       return {
         classification: 'PRODUCT_DETAIL',
@@ -212,11 +175,11 @@ export class QueryClassifier {
       };
     }
 
-    // 11. FAQ_QUERY
+    // 6. Default to NORMAL_RAG (covers comparisons, recommendations, warranty, return policy, and all FAQ queries)
     return {
-      classification: 'FAQ_QUERY',
+      classification: 'NORMAL_RAG',
       confidence: 1.0,
-      rationale: 'Default FAQ query fallback.'
+      rationale: 'Fallback to normal Adaptive RAG workflow.'
     };
   }
 }

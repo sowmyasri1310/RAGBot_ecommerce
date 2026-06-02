@@ -90,29 +90,27 @@ export class GroqService {
 
     // 1. QUERY CLASSIFICATION MOCK
     if (systemPrompt.includes('Classify the e-commerce user query')) {
-      let classification = 'FAQ_QUERY';
+      let classification = 'NORMAL_RAG';
       if (userLower.includes('what products are available') || userLower.includes('what all products') || userLower.includes('list all products') || userLower.includes('show all products') || userLower.includes('catalog') || userLower.includes('available products') || userLower.includes('list products') || userLower.includes('show products')) {
         classification = 'PRODUCT_CATALOG';
-      } else if (userLower.includes('warranty') || userLower.includes('guarantee')) {
-        classification = 'WARRANTY_QUERY';
-      } else if (userLower.includes('return') || userLower.includes('refund')) {
-        classification = 'RETURN_POLICY_QUERY';
-      } else if (userLower.includes('compare') || userLower.includes('versus') || userLower.includes('vs ')) {
-        classification = 'PRODUCT_COMPARE';
-      } else if (userLower.includes('recommend') || userLower.includes('best laptop') || userLower.includes('suitable for')) {
-        classification = 'PRODUCT_RECOMMEND';
-      } else {
-        // Detect any product mention → PRODUCT_DETAIL
-        const allProductTerms = [
-          'dell', 'xps', 'spectre', 'macbook', 'zephyrus', 'predator', 'helios', 'acer',
-          'thinkpad', 'lenovo', 'sony', 'wh-1000xm5', 'wh1000xm5', 'bose', 'quietcomfort',
-          'apple watch', 'watch ultra', 'dji', 'osmo', 'pocket 3', 'logitech', 'mx keys',
-          'keychron', 'q1 pro', 'razer', 'deathadder', 'samsung', 'odyssey', 'anker prime', 'anker',
-          'laptop', 'powerbank', 'power bank', 'headphones', 'earbuds', 'keyboard', 'mouse', 'monitor'
-        ];
-        if (allProductTerms.some(term => userLower.includes(term))) {
-          classification = 'PRODUCT_DETAIL';
+      } else if (userLower.includes('prices') || userLower.includes('pricing') || userLower.includes('price list') || userLower.includes('give prices')) {
+        classification = 'PRODUCT_PRICE_LIST';
+      } else if (userLower.includes('cheapest') || userLower.includes('lowest price') || userLower.includes('least expensive') || userLower.includes('lowest cost')) {
+        if (userLower.includes('laptop') || userLower.includes('monitor') || userLower.includes('headphone') || userLower.includes('earbuds') || userLower.includes('watch') || userLower.includes('keyboard')) {
+          classification = 'PRODUCT_FILTER';
+        } else {
+          classification = 'PRODUCT_CHEAPEST';
         }
+      } else if (userLower.includes('most expensive') || userLower.includes('costliest') || userLower.includes('highest price') || userLower.includes('maximum price')) {
+        if (userLower.includes('laptop') || userLower.includes('monitor') || userLower.includes('headphone') || userLower.includes('earbuds') || userLower.includes('watch')) {
+          classification = 'PRODUCT_FILTER';
+        } else {
+          classification = 'PRODUCT_COSTLIEST';
+        }
+      } else if (userLower.includes('ram') || userLower.includes('memory') || userLower.includes('rtx') || userLower.includes('nvidia') || userLower.includes('under') || userLower.includes('below') || userLower.includes('above') || userLower.includes('more than')) {
+        classification = 'PRODUCT_FILTER';
+      } else if (userLower.includes('tell me about') || userLower.includes('describe') || userLower.includes('specs') || userLower.includes('specification') || userLower.includes('what is')) {
+        classification = 'PRODUCT_DETAIL';
       }
 
       return JSON.stringify({

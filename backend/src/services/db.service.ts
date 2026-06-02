@@ -62,6 +62,7 @@ export interface ProductMetadata {
   product_name: string;
   category: string;
   price: number;
+  base_price: number;
   offer_price: number;
   warranty: string;
   ram: string;

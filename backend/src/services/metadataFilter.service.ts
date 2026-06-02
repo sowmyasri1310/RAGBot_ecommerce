@@ -2,12 +2,12 @@ import { logger } from '../utils/logger';
 import { DBService, DocumentRecord, ProductMetadata } from './db.service';
 
 export class MetadataFilterService {
-  // Static metadata map for the 15 standard products to guarantee 100% accurate spec retrieval.
   private static readonly STANDARD_PRODUCTS: Record<string, Omit<ProductMetadata, 'source_file'>> = {
     'dell_xps_15_description.md': {
       product_name: 'Dell XPS 15',
       category: 'Laptops',
       price: 1999,
+      base_price: 1999,
       offer_price: 1899,
       warranty: '2 Years',
       ram: '32GB',
@@ -20,6 +20,7 @@ export class MetadataFilterService {
       product_name: 'HP Spectre x360',
       category: 'Laptops',
       price: 1699,
+      base_price: 1699,
       offer_price: 1599,
       warranty: '2 Years',
       ram: '16GB',
@@ -32,6 +33,7 @@ export class MetadataFilterService {
       product_name: 'Lenovo ThinkPad X1 Carbon',
       category: 'Laptops',
       price: 2099,
+      base_price: 2099,
       offer_price: 1899,
       warranty: '2 Years',
       ram: '32GB',
@@ -44,6 +46,7 @@ export class MetadataFilterService {
       product_name: 'Apple MacBook Pro 16',
       category: 'Laptops',
       price: 2699,
+      base_price: 2699,
       offer_price: 2499,
       warranty: '2 Years',
       ram: '48GB',
@@ -56,6 +59,7 @@ export class MetadataFilterService {
       product_name: 'Asus ROG Zephyrus G16',
       category: 'Laptops',
       price: 2399,
+      base_price: 2399,
       offer_price: 2199,
       warranty: '2 Years',
       ram: '32GB',
@@ -68,6 +72,7 @@ export class MetadataFilterService {
       product_name: 'Acer Predator Helios 16',
       category: 'Laptops',
       price: 1799,
+      base_price: 1799,
       offer_price: 1649,
       warranty: '2 Years',
       ram: '16GB',
@@ -80,6 +85,7 @@ export class MetadataFilterService {
       product_name: 'Samsung Odyssey Neo G9',
       category: 'Monitor',
       price: 1999,
+      base_price: 1999,
       offer_price: 1799,
       warranty: '2 Years',
       ram: 'None',
@@ -92,6 +98,7 @@ export class MetadataFilterService {
       product_name: 'Sony WH-1000XM5',
       category: 'Audio',
       price: 449,
+      base_price: 449,
       offer_price: 399,
       warranty: '2 Years',
       ram: 'None',
@@ -104,6 +111,7 @@ export class MetadataFilterService {
       product_name: 'Logitech MX Keys S',
       category: 'Accessories',
       price: 119,
+      base_price: 119,
       offer_price: 109,
       warranty: '2 Years',
       ram: 'None',
@@ -116,6 +124,7 @@ export class MetadataFilterService {
       product_name: 'Apple Watch Ultra 2',
       category: 'Smartwatches',
       price: 849,
+      base_price: 849,
       offer_price: 799,
       warranty: '2 Years',
       ram: 'None',
@@ -128,6 +137,7 @@ export class MetadataFilterService {
       product_name: 'Bose QuietComfort Ultra Earbuds',
       category: 'Audio',
       price: 349,
+      base_price: 349,
       offer_price: 299,
       warranty: '2 Years',
       ram: 'None',
@@ -140,6 +150,7 @@ export class MetadataFilterService {
       product_name: 'Keychron Q1 Pro Keyboard',
       category: 'Accessories',
       price: 229,
+      base_price: 229,
       offer_price: 199,
       warranty: '2 Years',
       ram: 'None',
@@ -152,6 +163,7 @@ export class MetadataFilterService {
       product_name: 'Razer DeathAdder V3 Pro',
       category: 'Accessories',
       price: 169,
+      base_price: 169,
       offer_price: 149,
       warranty: '2 Years',
       ram: 'None',
@@ -164,6 +176,7 @@ export class MetadataFilterService {
       product_name: 'Anker Prime 20K Power Bank',
       category: 'Portable Charging',
       price: 149,
+      base_price: 149,
       offer_price: 129,
       warranty: '18 Months',
       ram: 'None',
@@ -176,6 +189,7 @@ export class MetadataFilterService {
       product_name: 'DJI Osmo Pocket 3',
       category: 'Camera',
       price: 549,
+      base_price: 549,
       offer_price: 519,
       warranty: '2 Years',
       ram: 'None',
@@ -269,6 +283,7 @@ export class MetadataFilterService {
       product_name,
       category,
       price,
+      base_price: price,
       offer_price,
       warranty,
       ram,
@@ -322,6 +337,8 @@ export class MetadataFilterService {
         return [];
       }
 
+      case 'PRODUCT_COSTLIEST':
+      case 'COSTLIEST_PRODUCT':
       case 'PRODUCT_MOST_EXPENSIVE':
       case 'MOST_EXPENSIVE_PRODUCT': {
         const sorted = [...products].sort((a, b) => b.offer_price - a.offer_price);
@@ -335,21 +352,53 @@ export class MetadataFilterService {
       case 'PRODUCT_FILTER': {
         let filtered = [...products];
 
-        // 1. Category Filter
-        if (qLower.includes('laptop')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('laptop'));
-        } else if (qLower.includes('monitor') || qLower.includes('screen') && !qLower.includes('oled') && !qLower.includes('ips')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('monitor'));
-        } else if (qLower.includes('headphone') || qLower.includes('earbuds') || qLower.includes('audio')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('audio'));
-        } else if (qLower.includes('keyboard') || qLower.includes('mouse') || qLower.includes('mice') || qLower.includes('accessory') || qLower.includes('accessories')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('accessories') || p.category.toLowerCase().includes('accessory'));
-        } else if (qLower.includes('watch') || qLower.includes('wearable')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('watch'));
-        } else if (qLower.includes('power bank') || qLower.includes('powerbank') || qLower.includes('charger')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('portable') || p.category.toLowerCase().includes('charging'));
-        } else if (qLower.includes('camera') || qLower.includes('pocket 3')) {
-          filtered = filtered.filter(p => p.category.toLowerCase().includes('camera'));
+        // 0. Product Name Filter
+        const matchingNames = products.filter(p => {
+          const nameLower = p.product_name.toLowerCase();
+          const cleanName = nameLower.replace(/[^a-z0-9]/g, ' ');
+          const cleanQuery = qLower.replace(/[^a-z0-9]/g, ' ');
+          
+          if (cleanQuery.includes(cleanName)) return true;
+          
+          if (nameLower === 'dell xps 15' && cleanQuery.includes('dell xps')) return true;
+          if (nameLower === 'hp spectre x360' && cleanQuery.includes('hp spectre')) return true;
+          if (nameLower === 'lenovo thinkpad x1 carbon' && (cleanQuery.includes('thinkpad') || cleanQuery.includes('x1 carbon'))) return true;
+          if (nameLower === 'apple macbook pro 16' && (cleanQuery.includes('macbook pro') || cleanQuery.includes('macbook'))) return true;
+          if (nameLower === 'asus rog zephyrus g16' && (cleanQuery.includes('rog zephyrus') || cleanQuery.includes('zephyrus'))) return true;
+          if (nameLower === 'acer predator helios 16' && (cleanQuery.includes('predator') || cleanQuery.includes('helios'))) return true;
+          if (nameLower === 'sony wh-1000xm5' && (cleanQuery.includes('sony') || cleanQuery.includes('wh-1000xm5') || cleanQuery.includes('wh1000xm5'))) return true;
+          if (nameLower === 'logitech mx keys s' && (cleanQuery.includes('logitech') || cleanQuery.includes('mx keys'))) return true;
+          if (nameLower === 'apple watch ultra 2' && cleanQuery.includes('apple watch')) return true;
+          if (nameLower === 'bose quietcomfort ultra earbuds' && (cleanQuery.includes('bose') || cleanQuery.includes('quietcomfort'))) return true;
+          if (nameLower === 'keychron q1 pro keyboard' && cleanQuery.includes('keychron')) return true;
+          if (nameLower === 'razer deathadder v3 pro' && (cleanQuery.includes('razer') || cleanQuery.includes('deathadder'))) return true;
+          if (nameLower === 'anker prime 20k power bank' && (cleanQuery.includes('anker') || cleanQuery.includes('power bank') || cleanQuery.includes('powerbank'))) return true;
+          if (nameLower === 'dji osmo pocket 3' && (cleanQuery.includes('dji') || cleanQuery.includes('osmo') || cleanQuery.includes('pocket 3'))) return true;
+          
+          return false;
+        });
+
+        if (matchingNames.length > 0) {
+          filtered = matchingNames;
+        }
+
+        // 1. Category Filter (Only apply if we didn't match a specific product name)
+        if (matchingNames.length === 0) {
+          if (qLower.includes('laptop')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('laptop'));
+          } else if (qLower.includes('monitor') || qLower.includes('screen') && !qLower.includes('oled') && !qLower.includes('ips')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('monitor'));
+          } else if (qLower.includes('headphone') || qLower.includes('earbuds') || qLower.includes('audio')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('audio'));
+          } else if (qLower.includes('keyboard') || qLower.includes('mouse') || qLower.includes('mice') || qLower.includes('accessory') || qLower.includes('accessories')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('accessories') || p.category.toLowerCase().includes('accessory'));
+          } else if (qLower.includes('watch') || qLower.includes('wearable')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('watch'));
+          } else if (qLower.includes('power bank') || qLower.includes('powerbank') || qLower.includes('charger')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('portable') || p.category.toLowerCase().includes('charging'));
+          } else if (qLower.includes('camera') || qLower.includes('pocket 3')) {
+            filtered = filtered.filter(p => p.category.toLowerCase().includes('camera'));
+          }
         }
 
         // 2. RAM Filter
@@ -415,6 +464,20 @@ export class MetadataFilterService {
         if (overMatch) {
           const limit = parseFloat(overMatch[1]);
           filtered = filtered.filter(p => p.offer_price > limit);
+        }
+
+        // 7. Cheapness/Costliness Sub-filtering
+        const isCheapestQuery = /\b(cheapest|lowest price|least expensive|cheapest cost|lowest cost|minimum price|lowest priced|cheapest of all)\b/i.test(qLower);
+        const isCostliestQuery = /\b(most expensive|highest price|costliest|highest cost|maximum price|most priced|highest priced|costliest product|costliest item|most expensive product)\b/i.test(qLower);
+
+        if (isCheapestQuery && filtered.length > 0) {
+          filtered.sort((a, b) => a.offer_price - b.offer_price);
+          const minPrice = filtered[0].offer_price;
+          filtered = filtered.filter(p => p.offer_price === minPrice);
+        } else if (isCostliestQuery && filtered.length > 0) {
+          filtered.sort((a, b) => b.offer_price - a.offer_price);
+          const maxPrice = filtered[0].offer_price;
+          filtered = filtered.filter(p => p.offer_price === maxPrice);
         }
 
         return filtered;

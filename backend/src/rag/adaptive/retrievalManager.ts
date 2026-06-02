@@ -84,31 +84,32 @@ Total Products: ${products.length}`;
       switch (classification) {
         case 'PRODUCT_DETAIL':
         case 'PRODUCT_CHEAPEST':
-        case 'PRODUCT_MOST_EXPENSIVE':
+        case 'PRODUCT_COSTLIEST':
         case 'PRODUCT_PRICE_LIST':
         case 'PRODUCT_FILTER':
           targetCollections = ['product_descriptions', 'manuals'];
           topK = 25;
           break;
-        case 'PRODUCT_COMPARISON':
-        case 'PRODUCT_COMPARE':
-          targetCollections = ['product_descriptions', 'manuals'];
-          topK = 25;
+        case 'NORMAL_RAG': {
+          const q = rewrittenQuery.toLowerCase();
+          if (/\b(compare|comparison|vs|versus|difference between|differ)\b/i.test(q)) {
+            targetCollections = ['product_descriptions', 'manuals'];
+            topK = 25;
+          } else if (/\b(recommend|recommendation|best|suggest|suitable|advise|for travel|for gaming|for video editing)\b/i.test(q)) {
+            targetCollections = ['product_descriptions', 'manuals', 'faqs'];
+            topK = 25;
+          } else if (/\b(warranty|guarantee)\b/i.test(q)) {
+            targetCollections = ['warranty', 'manuals'];
+            topK = 15;
+          } else if (/\b(return|refund|policy|restocking|fee|return window|return policy)\b/i.test(q)) {
+            targetCollections = ['returns'];
+            topK = 15;
+          } else {
+            targetCollections = ['faqs', 'shipping'];
+            topK = 15;
+          }
           break;
-        case 'PRODUCT_RECOMMENDATION':
-        case 'PRODUCT_RECOMMEND':
-          targetCollections = ['product_descriptions', 'manuals', 'faqs'];
-          topK = 25;
-          break;
-        case 'WARRANTY_QUERY':
-          targetCollections = ['warranty', 'manuals'];
-          topK = 15;
-          break;
-        case 'RETURN_POLICY_QUERY':
-          targetCollections = ['returns'];
-          topK = 15;
-          break;
-        case 'FAQ_QUERY':
+        }
         default:
           targetCollections = ['faqs', 'shipping'];
           topK = 15;
