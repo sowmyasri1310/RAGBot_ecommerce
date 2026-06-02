@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Eye, Network, RefreshCw, ShieldCheck, Copy, Check } from 'lucide-react';
+import { Send, Eye, Network, RefreshCw, ShieldCheck, Copy, Check, MessageSquare } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 
 interface Source {
@@ -54,6 +54,10 @@ export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string>('');
   const [sessionsList, setSessionsList] = useState<SessionSummary[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Toggle Sidebars state
+  const [showHistory, setShowHistory] = useState<boolean>(true);
+  const [showTrace, setShowTrace] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -251,16 +255,34 @@ export default function ChatPage() {
   return (
     <div className="chat-page-layout">
       {/* SIDEBAR PANEL: Chat History */}
-      <aside className="history-sidebar glass-card" style={{ width: '280px', display: 'flex', flexDirection: 'column', padding: '20px', gap: '16px', height: '100%', flexShrink: 0 }}>
+      <aside className="history-sidebar glass-card" style={{ width: '280px', display: showHistory ? 'flex' : 'none', flexDirection: 'column', padding: '20px', gap: '16px', height: '100%', flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '15px', color: 'white', fontWeight: 700 }}>Chat Sessions</h3>
-          <button 
-            className="btn btn-secondary" 
-            style={{ padding: '6px 12px', fontSize: '11px', minWidth: 'auto', border: '1px solid var(--border-glass-glow)', background: 'rgba(255,255,255,0.03)' }}
-            onClick={handleNewChat}
-          >
-            + New Chat
-          </button>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <button 
+              className="btn btn-secondary" 
+              style={{ padding: '6px 12px', fontSize: '11px', minWidth: 'auto', border: '1px solid var(--border-glass-glow)', background: 'rgba(255,255,255,0.03)' }}
+              onClick={handleNewChat}
+            >
+              + New Chat
+            </button>
+            <button
+              className="close-sidebar-btn"
+              onClick={() => setShowHistory(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-disabled)',
+                cursor: 'pointer',
+                fontSize: '20px',
+                padding: '2px 6px',
+                display: 'none'
+              }}
+              title="Close history"
+            >
+              &times;
+            </button>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -363,7 +385,28 @@ export default function ChatPage() {
       </aside>
 
       {/* CENTER COLUMN: Main Chat Container */}
-      <section className="chat-panel glass-card" style={{ padding: '24px' }}>
+      <section className="chat-panel glass-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        <div className="chat-toggles-row" style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexShrink: 0 }}>
+          <button 
+            type="button"
+            className="btn btn-secondary" 
+            style={{ padding: '8px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <MessageSquare size={14} />
+            <span>{showHistory ? "Hide History" : "Show History"}</span>
+          </button>
+          <button 
+            type="button"
+            className="btn btn-secondary" 
+            style={{ padding: '8px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => setShowTrace(!showTrace)}
+          >
+            <Network size={14} />
+            <span>{showTrace ? "Hide Trace" : "Show Trace"}</span>
+          </button>
+        </div>
+
         <div className="messages-scroller">
           {messages.map((msg, index) => {
             const isBot = msg.role === 'assistant';
@@ -412,7 +455,10 @@ export default function ChatPage() {
                             alignItems: 'center',
                             gap: '4px'
                           }}
-                          onClick={() => setActiveTrace(msg)}
+                          onClick={() => {
+                            setActiveTrace(msg);
+                            setShowTrace(true);
+                          }}
                         >
                           <Network size={10} />
                           <span>View Trace Diagnostics</span>
@@ -489,10 +535,28 @@ export default function ChatPage() {
       </section>
 
       {/* RIGHT COLUMN: RAG Trace Diagnostics Panel */}
-      <aside className="trace-panel glass-card" style={{ padding: '24px' }}>
-        <h3 style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', fontSize: '16px', color: 'white', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Network size={18} color="var(--primary)" />
-          <span>RAG Pipeline Diagnostics</span>
+      <aside className="trace-panel glass-card" style={{ display: showTrace ? 'flex' : 'none', padding: '24px' }}>
+        <h3 style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', fontSize: '16px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Network size={18} color="var(--primary)" />
+            <span>RAG Pipeline Diagnostics</span>
+          </div>
+          <button
+            className="close-sidebar-btn"
+            onClick={() => setShowTrace(false)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-disabled)',
+              cursor: 'pointer',
+              fontSize: '20px',
+              padding: '2px 6px',
+              display: 'none'
+            }}
+            title="Close trace"
+          >
+            &times;
+          </button>
         </h3>
 
         {!activeTrace ? (
