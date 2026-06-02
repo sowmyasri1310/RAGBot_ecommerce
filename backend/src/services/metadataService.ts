@@ -52,10 +52,11 @@ export class MetadataService {
     const q = query.toLowerCase();
     if (/\b(laptop|laptops)\b/i.test(q)) return 'laptop';
     if (/\b(monitor|monitors|screen|screens)\b/i.test(q)) return 'monitor';
-    if (/\b(headphone|headphones|earbud|earbuds|audio|sound|music)\b/i.test(q)) return 'audio';
-    if (/\b(keyboard|keyboards|mouse|mice|accessory|accessories)\b/i.test(q)) return 'accessories';
-    if (/\b(watch|watches|wearable|wearables)\b/i.test(q)) return 'smartwatches';
-    if (/\b(power bank|powerbank|powerbanks|charger|chargers|charging)\b/i.test(q)) return 'portable charging';
+    if (/\b(headphone|headphones|earbud|earbuds|audio|sound|music)\b/i.test(q)) return 'earbuds';
+    if (/\b(keyboard|keyboards)\b/i.test(q)) return 'keyboard';
+    if (/\b(mouse|mice)\b/i.test(q)) return 'mouse';
+    if (/\b(watch|watches|wearable|wearables|smartwatch|smartwatches)\b/i.test(q)) return 'smartwatch';
+    if (/\b(power bank|powerbank|powerbanks|charger|chargers|charging)\b/i.test(q)) return 'powerbank';
     if (/\b(camera|cameras)\b/i.test(q)) return 'camera';
     return undefined;
   }

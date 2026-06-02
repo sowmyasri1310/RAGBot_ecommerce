@@ -71,7 +71,7 @@
   },
   {
     "product_name": "Sony WH-1000XM5",
-    "category": "audio",
+    "category": "earbuds",
     "price": 449,
     "offer_price": 399,
     "warranty": "2 years",
@@ -81,7 +81,7 @@
   },
   {
     "product_name": "Logitech MX Keys S",
-    "category": "accessories",
+    "category": "keyboard",
     "price": 119,
     "offer_price": 109,
     "warranty": "2 years",
@@ -91,7 +91,7 @@
   },
   {
     "product_name": "Apple Watch Ultra 2",
-    "category": "smartwatches",
+    "category": "smartwatch",
     "price": 849,
     "offer_price": 799,
     "warranty": "2 years",
@@ -101,7 +101,7 @@
   },
   {
     "product_name": "Bose QuietComfort Ultra Earbuds",
-    "category": "audio",
+    "category": "earbuds",
     "price": 349,
     "offer_price": 299,
     "warranty": "2 years",
@@ -111,7 +111,7 @@
   },
   {
     "product_name": "Keychron Q1 Pro Keyboard",
-    "category": "accessories",
+    "category": "keyboard",
     "price": 229,
     "offer_price": 199,
     "warranty": "2 years",
@@ -121,7 +121,7 @@
   },
   {
     "product_name": "Razer DeathAdder V3 Pro",
-    "category": "accessories",
+    "category": "mouse",
     "price": 169,
     "offer_price": 149,
     "warranty": "2 years",
@@ -131,7 +131,7 @@
   },
   {
     "product_name": "Anker Prime 20K Power Bank",
-    "category": "portable charging",
+    "category": "powerbank",
     "price": 149,
     "offer_price": 129,
     "warranty": "18 months",

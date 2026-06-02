@@ -454,7 +454,7 @@ Final Product Selected : ${finalSelected}
         );
 
         if (matchingProducts.length === 0) {
-          answer = "I don't have that information in my knowledge database.";
+          answer = "I'm only able to answer questions about our product catalog, specs, pricing, warranties, and policies. For anything else, I'd recommend a general web search!";
           confidenceScore = 0.5;
           confidenceExplanation = 'No products matched the metadata filter constraints.';
         } else {
@@ -725,7 +725,7 @@ Answer the customer's question using ONLY the provided verified source documents
 Follow these rigid rules:
 - Ground your entire response ONLY on the facts given in the context (both the structured product specifications and the context chunks).
 - Do NOT perform any filtering, sorting, calculations, or inference. All sorting and filtering has already been done for you by the backend filter engine. Just explain, summarize, compare, or recommend the matching products presented to you in the context.
-- If no matching products or facts are found, state clearly: "I don't have that information in my knowledge database."
+- If no matching products or facts are found, state clearly: "I'm only able to answer questions about our product catalog, specs, pricing, warranties, and policies. For anything else, I'd recommend a general web search!"
 - When comparing products, use clear bullet points.
 - Include mention of the sources used to support your claims (by their file name).
 - Keep the response professional, friendly, and structured.

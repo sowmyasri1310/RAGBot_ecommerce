@@ -61,7 +61,7 @@ export class IntentDetector {
     const catalogKeywords = /\b(what products are available|what's available|list all products|show all products|what products do you have|display product catalog|display catalog|available items|list products|available products|what all products|show available products|products do you have|products are in the catalog|list of products|show products)\b/i;
     const priceListKeywords = /\b(show all prices|price list|give prices for all products|prices of all products|show prices|what are the prices)\b/i;
     
-    const categoryKeywords = /\b(laptop|laptops|monitor|monitors|headphones|earbuds|keyboard|keyboards|mouse|mice|watch|watches|power bank|powerbank|charger|camera|pocket)\b/i;
+    const categoryKeywords = /\b(laptop|laptops|monitor|monitors|earbud|earbuds|headphones|keyboard|keyboards|mouse|mice|watch|watches|smartwatch|smartwatches|powerbank|power bank|charger|camera|pocket)\b/i;
     const filterKeywords = /\b(ram|memory|rtx|nvidia|gpu|graphics|intel arc|iris xe|graphics card|oled|ips|liquid retina|retina xdr|display|screen|resolution|curved|battery|charging|fast charge|fast charging|recharging|expresscharge|rapid charge|battery life|battery hours)\b/i;
     
     const cheapestKeywords = /\b(cheapest|lowest price|least expensive|cheapest cost|lowest cost|minimum price|lowest priced|cheapest of all)\b/i;
@@ -82,6 +82,15 @@ export class IntentDetector {
     const hasCategory = categoryKeywords.test(q);
     const hasFilter = filterKeywords.test(q);
     const hasPriceLimit = priceLimitKeywords.test(q) || /\b\d+\s*gb\b/i.test(q) || /\b\d+\s*hour\b/i.test(q);
+
+    // BUG 1 & 2 — Recommendation queries checks
+    const recommendationKeywords = /\b(best|suggest|recommend|which one should|which is better|good for|suitable for|budget friendly|worth buying|which one)\b/i;
+    const isRecommendation = recommendationKeywords.test(q);
+
+    if (isRecommendation && (hasCategory || mentionsSpecificProduct)) {
+      logger.info(`[IntentDetector] Recommendation query detected. Routing to NORMAL_RAG.`);
+      return 'NORMAL_RAG';
+    }
 
     // Handle follow-up correction context (Gap 2)
     const isCorrection = /^(but\s+that|no\s+that|that\s+is\s+not|actually|instead|sorry|no\b)/i.test(q);

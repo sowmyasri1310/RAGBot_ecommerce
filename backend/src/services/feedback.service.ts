@@ -71,7 +71,7 @@ export class FeedbackService {
         return {
           success: true,
           matchFound: false,
-          answer: "I don't have that information in the database.",
+          answer: "I'm only able to answer questions about our product catalog, specs, pricing, warranties, and policies. For anything else, I'd recommend a general web search!",
           matchedFeedbacks: []
         };
       }
@@ -124,7 +124,7 @@ export class FeedbackService {
         return {
           success: true,
           matchFound: false,
-          answer: "I don't have that information in the database.",
+          answer: "I'm only able to answer questions about our product catalog, specs, pricing, warranties, and policies. For anything else, I'd recommend a general web search!",
           matchedFeedbacks: []
         };
       }
@@ -180,7 +180,7 @@ User Query: "${userQuery}"`;
       return {
         success: false,
         matchFound: false,
-        answer: "I don't have that information in the database.",
+        answer: "I'm only able to answer questions about our product catalog, specs, pricing, warranties, and policies. For anything else, I'd recommend a general web search!",
         matchedFeedbacks: []
       };
     }
