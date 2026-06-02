@@ -1,7 +1,7 @@
 import { MetadataService, ProductMetadata } from '../../services/metadataService';
 import { SessionService } from '../../services/session.service';
 import { logger } from '../../utils/logger';
-import { IntentType } from './intentDetector';
+import { IntentType, IntentDetector, ProductFilters, extractUnknownCategory } from './intentDetector';
 
 export interface RouterResult {
   handled: boolean;
@@ -52,6 +52,10 @@ export class QueryRouter {
       if (name === "DJI Osmo Pocket 3" && (qLower.includes("dji") || qLower.includes("osmo") || qLower.includes("pocket 3"))) return name;
     }
     return undefined;
+  }
+
+  private static extractUnknownCategory(query: string): string | undefined {
+    return extractUnknownCategory(query);
   }
 
   public static async route(
@@ -216,16 +220,100 @@ export class QueryRouter {
       }
 
       case 'PRODUCT_FILTER': {
-        const extractedCategory = MetadataService.extractCategory(query);
-        const { filtered, activeCategory } = MetadataService.filterProducts(
-          query,
-          session.lastFilterCategory || extractedCategory,
-          session.lastIntent,
-          extractedCategory
-        );
-        session.lastFilterCategory = activeCategory;
+        const filters = IntentDetector.extractFilters(query);
+        
+        const hasUnknownCategory = extractUnknownCategory(query) !== undefined;
+        // Carry over category if session has it, query doesn't specify one, and query doesn't specify an unknown category
+        if (!filters.category && session.lastFilterCategory && !hasUnknownCategory) {
+          filters.category = session.lastFilterCategory;
+        }
 
-        const table = MetadataService.formatAsMarkdownTable(filtered);
+        let filtered = MetadataService.filterProducts(filters, query, session.lastIntent);
+        
+        if (hasUnknownCategory) {
+          filtered = [];
+        }
+
+        if (filters.category) {
+          session.lastFilterCategory = filters.category;
+        }
+
+        // Handle Zero Results (Bug 4)
+        if (filtered.length === 0) {
+          if (!filters.category) {
+            // Case 1: Unknown Category
+            const extractedCategory = this.extractUnknownCategory(query) || "mobiles";
+            const answer = `We don't carry any ${extractedCategory} in our catalog.\nWe currently offer: Laptops, Keyboards, Mouse, Earbuds, Smartwatch, Monitor, Power Bank, and Camera.`;
+            return {
+              handled: true,
+              answer,
+              sourcesUsed: [],
+              confidenceScore: 1.0,
+              confidenceExplanation: 'Unknown category queried.'
+            };
+          } else {
+            // Case 3: Price filter too low
+            if (filters.price) {
+              const limit = filters.price.value;
+              const categoryProducts = allProducts.filter(p => p.category.toLowerCase() === filters.category!.toLowerCase());
+              if (categoryProducts.length > 0) {
+                categoryProducts.sort((a, b) => a.offer_price - b.offer_price);
+                const mostAffordable = categoryProducts[0];
+                const answer = `No ${filters.category} available under $${limit}.\nOur most affordable ${filters.category} is ${mostAffordable.product_name} at $${mostAffordable.offer_price}.`;
+                return {
+                  handled: true,
+                  answer,
+                  sourcesUsed: [],
+                  confidenceScore: 1.0,
+                  confidenceExplanation: 'Price constraint yielded zero results.'
+                };
+              }
+            }
+
+            // Case 2: Known category, spec too strict
+            let tooStrictField: string | undefined = undefined;
+            let tooStrictKey: keyof ProductFilters | undefined = undefined;
+
+            if (filters.ram) { tooStrictField = "RAM"; tooStrictKey = "ram"; }
+            else if (filters.storage) { tooStrictField = "Storage"; tooStrictKey = "storage"; }
+            else if (filters.gpu) { tooStrictField = "GPU"; tooStrictKey = "gpu"; }
+            else if (filters.warranty) { tooStrictField = "Warranty"; tooStrictKey = "warranty"; }
+
+            if (tooStrictField && tooStrictKey) {
+              const categoryProducts = allProducts.filter(p => p.category.toLowerCase() === filters.category!.toLowerCase());
+              const uniqueValues = Array.from(new Set(categoryProducts.map(p => {
+                if (tooStrictKey === 'ram') return p.ram;
+                if (tooStrictKey === 'storage') return p.storage;
+                if (tooStrictKey === 'gpu') return p.gpu;
+                if (tooStrictKey === 'warranty') return p.warranty;
+                return '';
+              })))
+              .filter(val => val && val !== 'None')
+              .sort();
+
+              const answer = `No ${filters.category} match that specification.\nAvailable ${filters.category} ${tooStrictField} options: ${uniqueValues.join(', ')}.`;
+              return {
+                handled: true,
+                answer,
+                sourcesUsed: [],
+                confidenceScore: 1.0,
+                confidenceExplanation: 'Spec constraint yielded zero results.'
+              };
+            }
+
+            // Default fallback if category matched but somehow no results and no specs detected
+            const answer = `No ${filters.category} match that specification.`;
+            return {
+              handled: true,
+              answer,
+              sourcesUsed: [],
+              confidenceScore: 1.0,
+              confidenceExplanation: 'No products matched category and spec combination.'
+            };
+          }
+        }
+
+        const table = MetadataService.formatAsMarkdownTable(filtered, filters);
         const answer = `Here are the matching products from the catalog:\n\n${table}`;
 
         const matchingNames = filtered.map(p => p.product_name);
