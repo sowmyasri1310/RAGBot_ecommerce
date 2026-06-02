@@ -276,7 +276,7 @@ export default function ChatPage() {
                 cursor: 'pointer',
                 fontSize: '20px',
                 padding: '2px 6px',
-                display: 'none'
+                display: 'block'
               }}
               title="Close history"
             >
@@ -551,7 +551,7 @@ export default function ChatPage() {
               cursor: 'pointer',
               fontSize: '20px',
               padding: '2px 6px',
-              display: 'none'
+              display: 'block'
             }}
             title="Close trace"
           >
