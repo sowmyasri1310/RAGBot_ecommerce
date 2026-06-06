@@ -1,5 +1,7 @@
 import { GroqService } from './groq.service';
 import { logger } from '../utils/logger';
+import { IntentType } from '../rag/adaptive/intentDetector';
+import { ProductMetadata } from './db.service';
 
 export interface IntentClassificationResult {
   intent: string;
@@ -95,7 +97,7 @@ Ensure the output is valid JSON and nothing else.`;
    * Maps the new 16 intents to the existing pipeline's 9 legacy intents.
    * Ensures that no existing query routing, metadata filtering, or Adaptive RAG functionality breaks.
    */
-  public static mapIntentToLegacy(intent: string, query: string): string {
+  public static mapIntentToLegacy(intent: string, query: string): IntentType {
     const qLower = query.toLowerCase();
     switch (intent) {
       case 'GREETING':
@@ -113,7 +115,7 @@ Ensure the output is valid JSON and nothing else.`;
         // Check if query mentions a specific product name dynamically from metadata
         const { MetadataFilterService } = require('./metadataFilter.service');
         const products = MetadataFilterService.getAllProductSpecifications();
-        const mentionsProduct = products.some(p => {
+        const mentionsProduct = products.some((p: ProductMetadata) => {
           const name = p.product_name.toLowerCase();
           const words = name.split(' ');
           const firstTwo = words.slice(0, 2).join(' ');

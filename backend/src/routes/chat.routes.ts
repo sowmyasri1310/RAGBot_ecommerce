@@ -428,8 +428,8 @@ Price: [Price]
                 SessionService.setCurrentProduct(sessionId, resolvedProductRAG);
               }
             } else if (
-              classification === 'PRODUCT_CATALOG' ||
-              classification === 'PRODUCT_PRICE_LIST' ||
+              (classification as string) === 'PRODUCT_CATALOG' ||
+              (classification as string) === 'PRODUCT_PRICE_LIST' ||
               classification === 'PRODUCT_CHEAPEST' ||
               classification === 'PRODUCT_COSTLIEST' ||
               classification === 'PRODUCT_FILTER'
