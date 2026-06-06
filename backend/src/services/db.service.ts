@@ -29,6 +29,17 @@ export interface EvaluationRecord {
     correctness: number;
   };
   traceId: string;
+  verifierScore?: number;
+  verificationStatus?: string;
+  regeneratedCount?: number;
+  intentAccuracy?: number;
+  normalizationApplied?: boolean;
+  intentConfidence?: number;
+  originalQuery?: string;
+  normalizedQuery?: string;
+  resolvedQuery?: string;
+  detectedIntent?: string;
+  finalRoutedIntent?: string;
 }
 
 export interface DocumentRecord {

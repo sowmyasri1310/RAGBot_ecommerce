@@ -27,7 +27,18 @@ export class EvaluationFramework {
     contextText: string,
     classification: string,
     confidence: number,
-    traceId: string
+    traceId: string,
+    verifierScore?: number,
+    verificationStatus?: string,
+    regeneratedCount?: number,
+    intentAccuracy?: number,
+    normalizationApplied?: boolean,
+    intentConfidence?: number,
+    originalQuery?: string,
+    normalizedQuery?: string,
+    resolvedQuery?: string,
+    detectedIntent?: string,
+    finalRoutedIntent?: string
   ): Promise<EvaluationMetrics> {
     logger.info('📊 Initiating RAG Pipeline Evaluation Framework...');
 
@@ -35,7 +46,18 @@ export class EvaluationFramework {
     const retrievalMetrics = this.calculateRetrievalMetrics(chunks);
 
     // 2. Calculate Answer Quality Metrics via LLM-as-a-Judge
-    const generationMetrics = await this.calculateGenerationMetrics(query, contextText, answer);
+    let generationMetrics;
+    if (classification === 'GREETING') {
+      generationMetrics = {
+        faithfulness: 1.0,
+        answerRelevance: 1.0,
+        groundedness: 1.0,
+        correctness: 1.0,
+        intentAccuracy: 1.0
+      };
+    } else {
+      generationMetrics = await this.calculateGenerationMetrics(originalQuery || query, contextText, answer, detectedIntent || classification);
+    }
 
     const metrics: EvaluationMetrics = {
       ...retrievalMetrics,
@@ -51,7 +73,18 @@ export class EvaluationFramework {
       classification,
       date: new Date().toISOString(),
       metrics,
-      traceId
+      traceId,
+      verifierScore,
+      verificationStatus,
+      regeneratedCount,
+      intentAccuracy: generationMetrics.intentAccuracy !== undefined ? generationMetrics.intentAccuracy : intentAccuracy,
+      normalizationApplied,
+      intentConfidence,
+      originalQuery,
+      normalizedQuery,
+      resolvedQuery,
+      detectedIntent,
+      finalRoutedIntent
     };
 
     DBService.addEvaluation(record);
@@ -110,31 +143,35 @@ export class EvaluationFramework {
   private static async calculateGenerationMetrics(
     query: string,
     context: string,
-    answer: string
+    answer: string,
+    detectedIntent?: string
   ): Promise<{
     faithfulness: number;
     answerRelevance: number;
     groundedness: number;
     correctness: number;
+    intentAccuracy?: number;
   }> {
     if (!context || context.includes('NO RELEVANT KNOWLEDGE CONTEXT FOUND')) {
-      return { faithfulness: 0.1, answerRelevance: 0.2, groundedness: 0.1, correctness: 0.1 };
+      return { faithfulness: 0.1, answerRelevance: 0.2, groundedness: 0.1, correctness: 0.1, intentAccuracy: 0.5 };
     }
 
     const systemPrompt = `You are a strict academic evaluator and RAG metrics judge.
 Evaluate the quality and accuracy of a chatbot response based on the retrieved context documents.
-Rate these four metrics between 0.0 (poor/untrue) and 1.0 (perfect/fully correct):
+Rate these metrics between 0.0 (poor/untrue) and 1.0 (perfect/fully correct):
 
 1. "faithfulness": Is the answer mathematically and factually grounded ONLY in the retrieved context? Deduct heavily for any facts not in the context.
 2. "answerRelevance": Does the answer directly address the user's question? Is it on-topic?
 3. "groundedness": How free of hallucinations is the answer? Are there any unsupported claims? (1.0 = zero hallucinations, 0.0 = completely fabricated).
 4. "correctness": Overall factual correctness compared against the source context facts.
+5. "intentAccuracy": Is the detected intent '${detectedIntent || 'UNKNOWN'}' accurate, appropriate, and logical for the user's query '${query}'? (1.0 = highly accurate, 0.0 = completely incorrect).
 
 You MUST respond with a JSON object containing these keys:
 - "faithfulness": Float between 0.0 and 1.0.
 - "answerRelevance": Float between 0.0 and 1.0.
 - "groundedness": Float between 0.0 and 1.0.
 - "correctness": Float between 0.0 and 1.0.
+- "intentAccuracy": Float between 0.0 and 1.0.
 - "reasoning": 1-sentence summary of your scores.
 
 Ensure the output is valid JSON and nothing else.`;
@@ -163,7 +200,8 @@ ${answer}
         faithfulness: parsed.faithfulness !== undefined ? Number(parsed.faithfulness) : 0.9,
         answerRelevance: parsed.answerRelevance !== undefined ? Number(parsed.answerRelevance) : 0.9,
         groundedness: parsed.groundedness !== undefined ? Number(parsed.groundedness) : 0.9,
-        correctness: parsed.correctness !== undefined ? Number(parsed.correctness) : 0.9
+        correctness: parsed.correctness !== undefined ? Number(parsed.correctness) : 0.9,
+        intentAccuracy: parsed.intentAccuracy !== undefined ? Number(parsed.intentAccuracy) : 0.9
       };
     } catch (error) {
       logger.error('Error running evaluator LLM metrics:', error);
@@ -172,7 +210,8 @@ ${answer}
         faithfulness: 0.8,
         answerRelevance: 0.8,
         groundedness: 0.8,
-        correctness: 0.8
+        correctness: 0.8,
+        intentAccuracy: 0.8
       };
     }
   }

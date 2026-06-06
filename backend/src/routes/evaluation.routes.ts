@@ -55,7 +55,9 @@ router.get('/metrics', (req: Request, res: Response) => {
           faithfulness: 0,
           answerRelevance: 0,
           groundedness: 0,
-          correctness: 0
+          correctness: 0,
+          intentAccuracy: 0,
+          intentConfidence: 0
         },
         history: []
       });
@@ -73,6 +75,8 @@ router.get('/metrics', (req: Request, res: Response) => {
         sums.answerRelevance += ev.metrics.answerRelevance || 0;
         sums.groundedness += ev.metrics.groundedness || 0;
         sums.correctness += ev.metrics.correctness || 0;
+        sums.intentAccuracy += ev.intentAccuracy !== undefined ? ev.intentAccuracy : 0;
+        sums.intentConfidence += ev.intentConfidence !== undefined ? ev.intentConfidence : 0;
         return sums;
       },
       {
@@ -83,7 +87,9 @@ router.get('/metrics', (req: Request, res: Response) => {
         faithfulness: 0,
         answerRelevance: 0,
         groundedness: 0,
-        correctness: 0
+        correctness: 0,
+        intentAccuracy: 0,
+        intentConfidence: 0
       }
     );
 
@@ -95,7 +101,9 @@ router.get('/metrics', (req: Request, res: Response) => {
       faithfulness: totals.faithfulness / count,
       answerRelevance: totals.answerRelevance / count,
       groundedness: totals.groundedness / count,
-      correctness: totals.correctness / count
+      correctness: totals.correctness / count,
+      intentAccuracy: totals.intentAccuracy / count,
+      intentConfidence: totals.intentConfidence / count
     };
 
     return res.status(200).json({
@@ -109,7 +117,18 @@ router.get('/metrics', (req: Request, res: Response) => {
         confidence: ev.confidence,
         date: ev.date,
         metrics: ev.metrics,
-        traceId: ev.traceId
+        traceId: ev.traceId,
+        verifierScore: ev.verifierScore,
+        verificationStatus: ev.verificationStatus,
+        regeneratedCount: ev.regeneratedCount,
+        intentAccuracy: ev.intentAccuracy,
+        normalizationApplied: ev.normalizationApplied,
+        intentConfidence: ev.intentConfidence,
+        originalQuery: ev.originalQuery,
+        normalizedQuery: ev.normalizedQuery,
+        resolvedQuery: ev.resolvedQuery,
+        detectedIntent: ev.detectedIntent,
+        finalRoutedIntent: ev.finalRoutedIntent
       }))
     });
   } catch (error) {

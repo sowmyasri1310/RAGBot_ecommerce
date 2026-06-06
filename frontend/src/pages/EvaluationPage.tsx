@@ -11,6 +11,8 @@ interface MetricAverages {
   answerRelevance: number;
   groundedness: number;
   correctness: number;
+  intentAccuracy?: number;
+  intentConfidence?: number;
 }
 
 interface EvaluationLog {
@@ -31,6 +33,17 @@ interface EvaluationLog {
     correctness: number;
   };
   traceId: string;
+  verifierScore?: number;
+  verificationStatus?: string;
+  regeneratedCount?: number;
+  intentAccuracy?: number;
+  normalizationApplied?: boolean;
+  intentConfidence?: number;
+  originalQuery?: string;
+  normalizedQuery?: string;
+  resolvedQuery?: string;
+  detectedIntent?: string;
+  finalRoutedIntent?: string;
 }
 
 export default function EvaluationPage() {
@@ -42,7 +55,9 @@ export default function EvaluationPage() {
     faithfulness: 0,
     answerRelevance: 0,
     groundedness: 0,
-    correctness: 0
+    correctness: 0,
+    intentAccuracy: 0,
+    intentConfidence: 0
   });
   const [history, setHistory] = useState<EvaluationLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -87,7 +102,7 @@ export default function EvaluationPage() {
   const getPercentage = (val: number) => `${(val * 100).toFixed(0)}%`;
 
   // Standard labels and scores list for the Bar chart
-  const barChartLabels = ['Precision@K', 'Recall@K', 'MRR', 'Context Rel.', 'Faithfulness', 'Answer Rel.', 'Groundedness', 'Correctness'];
+  const barChartLabels = ['Precision@K', 'Recall@K', 'MRR', 'Context Rel.', 'Faithfulness', 'Answer Rel.', 'Groundedness', 'Correctness', 'Intent Accuracy', 'Intent Conf.'];
   const barScores = [
     averages.precision,
     averages.recall,
@@ -96,14 +111,16 @@ export default function EvaluationPage() {
     averages.faithfulness,
     averages.answerRelevance,
     averages.groundedness,
-    averages.correctness
+    averages.correctness,
+    averages.intentAccuracy || 0,
+    averages.intentConfidence || 0
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       
       {/* Metrics overview summary cards */}
-      <section className="stats-grid">
+      <section className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <div className="glass-card stat-card" style={{ borderLeft: '3px solid var(--success)' }}>
           <div className="stat-info">
             <span className="stat-value">{getPercentage(averages.faithfulness)}</span>
@@ -129,6 +146,20 @@ export default function EvaluationPage() {
           <div className="stat-info">
             <span className="stat-value">{averages.mrr.toFixed(2)}</span>
             <span className="stat-label">Avg MRR Score</span>
+          </div>
+        </div>
+
+        <div className="glass-card stat-card" style={{ borderLeft: '3px solid #10b981' }}>
+          <div className="stat-info">
+            <span className="stat-value">{getPercentage(averages.intentAccuracy || 0)}</span>
+            <span className="stat-label">Avg Intent Accuracy</span>
+          </div>
+        </div>
+
+        <div className="glass-card stat-card" style={{ borderLeft: '3px solid #06b6d4' }}>
+          <div className="stat-info">
+            <span className="stat-value">{getPercentage(averages.intentConfidence || 0)}</span>
+            <span className="stat-label">Avg Intent Conf.</span>
           </div>
         </div>
       </section>
@@ -294,16 +325,23 @@ export default function EvaluationPage() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '1200px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-glass)', color: 'var(--text-muted)', fontSize: '13px' }}>
                   <th style={{ padding: '12px 16px' }}>Date</th>
-                  <th style={{ padding: '12px 16px' }}>Customer Query</th>
+                  <th style={{ padding: '12px 16px' }}>Original Query</th>
+                  <th style={{ padding: '12px 16px' }}>Normalized Query</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Norm. Applied?</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Intent Conf.</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Intent Acc.</th>
                   <th style={{ padding: '12px 16px' }}>Category</th>
                   <th style={{ padding: '12px 16px', textAlign: 'center' }}>Precision@K</th>
                   <th style={{ padding: '12px 16px', textAlign: 'center' }}>MRR</th>
                   <th style={{ padding: '12px 16px', textAlign: 'center' }}>Faithfulness</th>
                   <th style={{ padding: '12px 16px', textAlign: 'center' }}>Groundedness</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Verifier Score</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Status</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center' }}>Regens</th>
                   <th style={{ padding: '12px 16px', textAlign: 'center' }}>Trace ID</th>
                 </tr>
               </thead>
@@ -311,8 +349,20 @@ export default function EvaluationPage() {
                 {history.map((log) => (
                   <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', fontSize: '13px' }}>
                     <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{new Date(log.date).toLocaleDateString()}</td>
-                    <td style={{ padding: '14px 16px', color: '#ffffff', fontWeight: 500, maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '14px 16px', color: '#ffffff', fontWeight: 500, maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {log.query}
+                    </td>
+                    <td style={{ padding: '14px 16px', color: 'var(--text-muted)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {log.normalizedQuery || log.query}
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center', color: log.normalizationApplied ? 'var(--warning)' : 'var(--text-disabled)' }}>
+                      {log.normalizationApplied ? 'Yes' : 'No'}
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 700, color: 'white' }}>
+                      {log.intentConfidence !== undefined ? `${(log.intentConfidence * 100).toFixed(0)}%` : 'N/A'}
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 700, color: log.intentAccuracy !== undefined ? (log.intentAccuracy >= 0.8 ? 'var(--success)' : 'var(--warning)') : 'var(--text-disabled)' }}>
+                      {log.intentAccuracy !== undefined ? `${(log.intentAccuracy * 100).toFixed(0)}%` : 'N/A'}
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <span style={{ 
@@ -337,6 +387,24 @@ export default function EvaluationPage() {
                     </td>
                     <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 700, color: log.metrics.groundedness >= 0.8 ? 'var(--success)' : 'var(--warning)' }}>
                       {(log.metrics.groundedness * 100).toFixed(0)}%
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 700, color: log.verifierScore !== undefined ? (log.verifierScore >= 75 ? 'var(--success)' : 'var(--warning)') : 'var(--text-disabled)' }}>
+                      {log.verifierScore !== undefined ? `${log.verifierScore}` : 'N/A'}
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                      <span style={{ 
+                        fontSize: '10px', 
+                        padding: '2px 6px', 
+                        borderRadius: '10px',
+                        background: log.verificationStatus === 'passed' ? 'rgba(10, 220, 160, 0.1)' : log.verificationStatus === 'regenerated' ? 'rgba(255, 180, 0, 0.1)' : log.verificationStatus === 'failed' ? 'rgba(255, 70, 70, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid var(--border-glass)',
+                        color: log.verificationStatus === 'passed' ? 'var(--success)' : log.verificationStatus === 'regenerated' ? 'var(--warning)' : log.verificationStatus === 'failed' ? '#ff4646' : 'var(--text-disabled)'
+                      }}>
+                        {log.verificationStatus || 'N/A'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px 16px', textAlign: 'center', color: log.regeneratedCount ? 'var(--warning)' : 'var(--text-muted)' }}>
+                      {log.regeneratedCount !== undefined ? log.regeneratedCount : 'N/A'}
                     </td>
                     <td style={{ padding: '14px 16px', fontFamily: 'monospace', fontSize: '11px', color: 'var(--text-disabled)' }}>
                       {log.traceId}
